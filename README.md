@@ -1,36 +1,147 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📚 Trove - Your Personal Reading Companion
 
-## Getting Started
+A modern, full-featured web application for managing your e-book library, tracking reading progress, taking notes, and connecting with other readers.
 
-First, run the development server:
+## ✨ Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- 📖 **E-Book Reader** - Read PDF, EPUB, and TXT files in a beautiful, customizable reader
+- 📊 **Reading Analytics** - Track your reading time, streaks, and progress with interactive charts
+- ✍️ **Notes & Highlights** - Mark important passages and keep your thoughts organized
+- 📚 **Library Management** - Upload and organize your personal book collection
+- 👥 **Community** - Join discussion groups and connect with fellow readers
+- 🎯 **Reading Goals** - Set and track daily reading targets
+- 🌙 **Dark Mode** - Easy on the eyes with full dark mode support
+- 📱 **Responsive** - Works seamlessly on desktop, tablet, and mobile
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+ 
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <your-repo-url>
+   cd Trove
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Add your Supabase credentials to `.env.local`:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=your-project-url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   ```
+
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## 🛠 Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: Radix UI
+- **Animations**: Framer Motion
+- **Charts**: Recharts
+- **Database**: Supabase
+- **Authentication**: Supabase Auth
+
+## 📁 Project Structure
+
+```
+├── app/                    # Next.js app directory
+│   ├── dashboard/         # Dashboard and main features
+│   ├── login/            # Authentication pages
+│   └── page.tsx          # Landing page
+├── components/            # React components
+│   ├── ui/               # Base UI components
+│   └── features/         # Feature-specific components
+├── lib/                  # Utility functions
+├── types/                # TypeScript type definitions
+└── public/               # Static assets
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🎨 UI Components
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Built with a comprehensive set of reusable components:
+- Button, Card, Input, Dialog
+- Progress, Slider, Switch, Label
+- Custom feature components for each section
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📝 Available Scripts
 
-## Learn More
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm start` - Start production server
+- `npm run lint` - Run ESLint
 
-To learn more about Next.js, take a look at the following resources:
+## 🔧 Configuration
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Database Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Create the following tables in your Supabase project:
 
-## Deploy on Vercel
+```sql
+-- Books table
+CREATE TABLE books (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id),
+  title TEXT NOT NULL,
+  author TEXT,
+  file_url TEXT NOT NULL,
+  cover_url TEXT,
+  format TEXT,
+  total_pages INT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+-- Add more tables for reading_progress, notes, highlights, etc.
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🚧 Current Status
+
+**Frontend**: ✅ Complete
+- All UI components implemented
+- Responsive design
+- Animations and transitions
+- Dark mode support
+
+**Backend**: 🔄 In Progress
+- Supabase client configured
+- Database schema defined
+- Auth integration needed
+- File upload functionality needed
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🙏 Acknowledgments
+
+- Design inspired by modern reading apps
+- Icons by Lucide
+- UI components powered by Radix UI
+
+---
+
+Built with ❤️ for book lovers everywhere
