@@ -9,7 +9,7 @@ import { useAuth } from "@/components/providers/auth-provider"
 import { useEffect, useState } from "react"
 
 
-export async function NotesList() {
+export function NotesList() {
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
