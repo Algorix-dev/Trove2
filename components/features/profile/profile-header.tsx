@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { CalendarDays, BookOpen, Flame, Award } from "lucide-react"
+import { CalendarDays, BookOpen, Flame, Award, Trophy } from "lucide-react"
 import { format } from "date-fns"
 
 interface ProfileHeaderProps {
@@ -16,6 +16,7 @@ interface ProfileHeaderProps {
     stats: {
         booksRead: number
         streak: number
+        highestStreak: number
         totalMinutes: number
     }
 }
@@ -52,7 +53,7 @@ export function ProfileHeader({ user, stats }: ProfileHeaderProps) {
                 </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Card>
                     <CardContent className="flex flex-col items-center justify-center p-6 gap-2">
                         <BookOpen className="h-8 w-8 text-blue-500" />
@@ -64,7 +65,14 @@ export function ProfileHeader({ user, stats }: ProfileHeaderProps) {
                     <CardContent className="flex flex-col items-center justify-center p-6 gap-2">
                         <Flame className="h-8 w-8 text-orange-500" />
                         <div className="text-2xl font-bold">{stats.streak}</div>
-                        <div className="text-xs text-muted-foreground uppercase tracking-wider">Day Streak</div>
+                        <div className="text-xs text-muted-foreground uppercase tracking-wider">Current Streak</div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="flex flex-col items-center justify-center p-6 gap-2">
+                        <Trophy className="h-8 w-8 text-yellow-500" />
+                        <div className="text-2xl font-bold">{stats.highestStreak}</div>
+                        <div className="text-xs text-muted-foreground uppercase tracking-wider">Best Streak</div>
                     </CardContent>
                 </Card>
                 <Card>
