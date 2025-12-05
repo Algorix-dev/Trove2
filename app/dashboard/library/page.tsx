@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { LibraryDebugger } from "@/components/debug/library-debugger"
 
 export default async function LibraryPage() {
     const supabase = await createClient()
@@ -49,6 +50,7 @@ export default async function LibraryPage() {
                 {/* Add filters here later if needed */}
             </div>
 
+            <LibraryDebugger />
             <BookGrid books={books} />
         </div>
     )
