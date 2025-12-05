@@ -14,6 +14,11 @@ interface BookGridProps {
     books: Book[]
 }
 
+import { DeleteConfirmDialog } from "@/components/features/delete-confirm-dialog"
+import { useState } from "react"
+
+// ... imports remain same but ensuring no duplicates
+
 export function BookGrid({ books }: BookGridProps) {
     const router = useRouter()
     const supabase = createBrowserClient(
@@ -21,14 +26,22 @@ export function BookGrid({ books }: BookGridProps) {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
 
-    const handleDelete = async (e: React.MouseEvent, bookId: string, title: string) => {
-        e.preventDefault() // Prevent navigation to reader
+    const [deleteTarget, setDeleteTarget] = useState<{ id: string, title: string } | null>(null)
+
+    const handleDeleteClick = (e: React.MouseEvent, bookId: string, title: string) => {
+        e.preventDefault()
         e.stopPropagation()
 
-        if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
-            return
+        // Check preference
+        const dontAsk = localStorage.getItem("trove-delete-book-dont-ask")
+        if (dontAsk === "true") {
+            performDelete(bookId)
+        } else {
+            setDeleteTarget({ id: bookId, title })
         }
+    }
 
+    const performDelete = async (bookId: string) => {
         try {
             const { error } = await supabase
                 .from('books')
@@ -66,7 +79,7 @@ export function BookGrid({ books }: BookGridProps) {
                                 variant="destructive"
                                 size="icon"
                                 className="absolute top-2 right-2 h-8 w-8 z-10 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                                onClick={(e) => handleDelete(e, book.id, book.title)}
+                                onClick={(e) => handleDeleteClick(e, book.id, book.title)}
                             >
                                 <Trash2 className="h-4 w-4" />
                             </Button>
@@ -117,6 +130,16 @@ export function BookGrid({ books }: BookGridProps) {
                     </Link>
                 )
             })}
+            {deleteTarget && (
+                <DeleteConfirmDialog
+                    open={!!deleteTarget}
+                    onOpenChange={(open: boolean) => !open && setDeleteTarget(null)}
+                    onConfirm={() => deleteTarget && performDelete(deleteTarget.id)}
+                    title="Delete Book?"
+                    description={`Are you sure you want to delete "${deleteTarget.title}"? This action cannot be undone.`}
+                    storageKey="trove-delete-book-dont-ask"
+                />
+            )}
         </div>
     )
 }

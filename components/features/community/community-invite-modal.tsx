@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { UserPlus, Copy, Mail, MessageCircle, Check } from "lucide-react"
+import { toast } from "sonner"
 
 interface CommunityInviteModalProps {
     communityId: string
@@ -54,7 +55,7 @@ export function CommunityInviteModal({ communityId, communityName }: CommunityIn
         await new Promise(resolve => setTimeout(resolve, 1000))
         setSending(false)
         setEmail("")
-        alert(`Invitation to "${communityName}" sent to ${email}!`)
+        toast.success(`Invitation to "${communityName}" sent to ${email}!`)
     }
 
     return (

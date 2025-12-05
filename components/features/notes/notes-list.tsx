@@ -12,6 +12,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
 import { toast } from "sonner"
+import { DeleteConfirmDialog } from "@/components/features/delete-confirm-dialog"
 
 export function NotesList() {
     const supabase = createBrowserClient(
@@ -41,9 +42,18 @@ export function NotesList() {
         setLoading(false)
     }
 
-    const handleDelete = async (noteId: string) => {
-        if (!confirm("Are you sure you want to delete this note?")) return
+    const [deleteNoteId, setDeleteNoteId] = useState<string | null>(null)
 
+    const handleDeleteClick = (noteId: string) => {
+        const dontAsk = localStorage.getItem("trove-delete-note-dont-ask")
+        if (dontAsk === "true") {
+            performDelete(noteId)
+        } else {
+            setDeleteNoteId(noteId)
+        }
+    }
+
+    const performDelete = async (noteId: string) => {
         try {
             const { error } = await supabase
                 .from('notes')
@@ -99,7 +109,7 @@ export function NotesList() {
                             variant="ghost"
                             size="icon"
                             className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => handleDelete(note.id)}
+                            onClick={() => handleDeleteClick(note.id)}
                         >
                             <Trash2 className="h-3 w-3 text-destructive" />
                         </Button>
@@ -120,6 +130,16 @@ export function NotesList() {
                     </Card>
                 ))}
             </div>
+            {deleteNoteId && (
+                <DeleteConfirmDialog
+                    open={!!deleteNoteId}
+                    onOpenChange={(open: boolean) => !open && setDeleteNoteId(null)}
+                    onConfirm={() => deleteNoteId && performDelete(deleteNoteId)}
+                    title="Delete Note?"
+                    description="Are you sure you want to delete this note? This action cannot be undone."
+                    storageKey="trove-delete-note-dont-ask"
+                />
+            )}
         </div>
     )
 }

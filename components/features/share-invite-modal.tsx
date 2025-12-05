@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Share2, Copy, Mail, MessageCircle, Check } from "lucide-react"
+import { toast } from "sonner"
 
 export function ShareInviteModal() {
     const [copied, setCopied] = useState(false)
@@ -49,7 +50,7 @@ export function ShareInviteModal() {
         await new Promise(resolve => setTimeout(resolve, 1000))
         setSending(false)
         setEmail("")
-        alert(`Invitation sent to ${email}!`)
+        toast.success(`Invitation sent to ${email}!`)
     }
 
     return (
