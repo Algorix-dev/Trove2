@@ -50,11 +50,12 @@ export function ContinueReading() {
                 .single()
 
             if (data && data.books) {
+                const bookData = Array.isArray(data.books) ? data.books[0] : data.books
                 setBook({
-                    id: data.books.id,
-                    title: data.books.title,
-                    author: data.books.author,
-                    cover_url: data.books.cover_url,
+                    id: bookData.id,
+                    title: bookData.title,
+                    author: bookData.author,
+                    cover_url: bookData.cover_url,
                     current_page: data.current_page,
                     total_pages: data.total_pages
                 })
