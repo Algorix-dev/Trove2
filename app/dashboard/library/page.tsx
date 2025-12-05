@@ -13,11 +13,26 @@ export default async function LibraryPage() {
         redirect("/login")
     }
 
-    const { data: books } = await supabase
+    // Fetch books with reading progress
+    const { data: booksData } = await supabase
         .from('books')
-        .select('*')
+        .select(`
+            *,
+            reading_progress (
+                current_page,
+                total_pages
+            )
+        `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
+
+    // Transform data to include progress percentage
+    const books = booksData?.map(book => ({
+        ...book,
+        progress: book.reading_progress?.[0]
+            ? Math.round((book.reading_progress[0].current_page / book.reading_progress[0].total_pages) * 100)
+            : 0
+    })) || []
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -34,7 +49,7 @@ export default async function LibraryPage() {
                 {/* Add filters here later if needed */}
             </div>
 
-            <BookGrid books={books || []} />
+            <BookGrid books={books} />
         </div>
     )
 }

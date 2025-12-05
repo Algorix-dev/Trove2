@@ -71,19 +71,22 @@ export function PDFViewer({ fileUrl, bookId, userId, readerTheme = 'light' }: PD
         setLoading(false);
     }
 
-    // Theme styles
+    // Theme styles with CSS filters for PDF
     const themeStyles = {
         light: {
             background: 'bg-muted/30',
-            pageBackground: 'bg-white'
+            pageBackground: 'bg-white',
+            filter: 'none'
         },
         dark: {
             background: 'bg-gray-900',
-            pageBackground: 'bg-gray-800'
+            pageBackground: 'bg-gray-800',
+            filter: 'invert(1) hue-rotate(180deg)' // Invert colors for dark mode
         },
         sepia: {
             background: 'bg-amber-50',
-            pageBackground: 'bg-amber-100'
+            pageBackground: 'bg-amber-100',
+            filter: 'sepia(0.5) brightness(1.1)' // Apply sepia tone
         }
     };
 
@@ -131,13 +134,15 @@ export function PDFViewer({ fileUrl, bookId, userId, readerTheme = 'light' }: PD
                             </div>
                         }
                     >
-                        <Page
-                            pageNumber={pageNumber}
-                            scale={scale}
-                            renderTextLayer={true}
-                            renderAnnotationLayer={true}
-                            className={currentTheme.pageBackground}
-                        />
+                        <div style={{ filter: currentTheme.filter }}>
+                            <Page
+                                pageNumber={pageNumber}
+                                scale={scale}
+                                renderTextLayer={true}
+                                renderAnnotationLayer={true}
+                                className={currentTheme.pageBackground}
+                            />
+                        </div>
                     </Document>
                 </div>
             </div>

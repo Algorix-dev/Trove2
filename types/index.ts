@@ -15,6 +15,7 @@ export interface Book {
     format: 'pdf' | 'epub' | 'txt'
     total_pages?: number
     created_at: string
+    progress?: number  // Reading progress percentage
 }
 
 export interface ReadingProgress {
