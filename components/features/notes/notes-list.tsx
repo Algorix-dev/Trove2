@@ -31,7 +31,6 @@ export function NotesList() {
             const { data } = await supabase
                 .from('notes')
                 .select('*')
-                .select('*')
                 // Rely on RLS for user filtering
                 .order('created_at', { ascending: false })
 

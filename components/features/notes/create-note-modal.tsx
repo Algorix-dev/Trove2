@@ -22,6 +22,13 @@ import { toast } from "sonner"
 
 export function CreateNoteModal() {
     const [open, setOpen] = useState(false)
+
+    const handleOpenChange = (newOpen: boolean) => {
+        setOpen(newOpen)
+        if (newOpen) {
+            fetchBooks()
+        }
+    }
     const [bookTitle, setBookTitle] = useState("")
     const [highlight, setHighlight] = useState("")
     const [note, setNote] = useState("")
@@ -34,20 +41,37 @@ export function CreateNoteModal() {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
 
+    const [libraryBooks, setLibraryBooks] = useState<any[]>([])
+
+    // Fetch library books for matching
+    const fetchBooks = async () => {
+        if (!user) return
+        const { data } = await supabase
+            .from('books')
+            .select('id, title')
+            .eq('user_id', user.id)
+
+        if (data) setLibraryBooks(data)
+    }
+
     const handleSubmit = async () => {
         if (!user || !bookTitle || !note) return
 
         setLoading(true)
         try {
-            // For now, we'll store notes without linking to a specific book
-            // In a real app, you'd have a book selector
+            // Find book with flexible matching (ignore case and extra spaces)
+            const targetTitle = bookTitle.trim().toLowerCase().replace(/\s+/g, ' ')
+
+            const matchedBook = libraryBooks.find(b =>
+                b.title.toLowerCase().trim().replace(/\s+/g, ' ') === targetTitle
+            )
+
             const { error } = await supabase
                 .from('notes')
                 .insert({
                     user_id: user.id,
-                    book_id: null, // Would be selected from a dropdown in production
+                    book_id: matchedBook ? matchedBook.id : null,
                     content: note,
-                    // Store highlight and book title in metadata for now
                 })
 
             if (error) throw error
@@ -56,9 +80,8 @@ export function CreateNoteModal() {
             setBookTitle("")
             setHighlight("")
             setNote("")
-            setNote("")
             router.refresh()
-            toast.success("Note created successfully!")
+            toast.success(matchedBook ? "Note added to " + matchedBook.title : "General note created (Book not found in library)")
         } catch (error: any) {
             console.error(error)
             toast.error(error.message)
@@ -68,7 +91,7 @@ export function CreateNoteModal() {
     }
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 <Button className="gap-2">
                     <Plus className="h-4 w-4" /> Create Note
