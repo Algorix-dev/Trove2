@@ -33,8 +33,8 @@ export default async function ReaderPage({ params }: { params: Promise<{ id: str
         .createSignedUrl(book.file_url, 3600) // 1 hour expiry
 
     return (
-        <ReaderLayout title={book.title}>
-            <PDFViewer fileUrl={data?.signedUrl || ""} />
+        <ReaderLayout title={book.title} bookId={id} userId={user.id}>
+            <PDFViewer fileUrl={data?.signedUrl || ""} bookId={id} userId={user.id} />
         </ReaderLayout>
     )
 }

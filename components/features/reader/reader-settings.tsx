@@ -6,20 +6,17 @@ import { Slider } from "@/components/ui/slider"
 import { Sun, Moon, Monitor } from "lucide-react"
 import { useState } from "react"
 
-export function ReaderSettings() {
+interface ReaderSettingsProps {
+    onThemeChange: (theme: 'light' | 'dark' | 'sepia') => void;
+    currentTheme: 'light' | 'dark' | 'sepia';
+}
+
+export function ReaderSettings({ onThemeChange, currentTheme }: ReaderSettingsProps) {
     const [fontSize, setFontSize] = useState([100])
-    const [readerTheme, setReaderTheme] = useState<'light' | 'dark' | 'sepia'>('light')
 
     const handleFontSizeChange = (value: number[]) => {
         setFontSize(value)
-        // TODO: Apply font size to reader
         console.log(`Font size: ${value[0]}%`)
-    }
-
-    const handleThemeChange = (theme: 'light' | 'dark' | 'sepia') => {
-        setReaderTheme(theme)
-        // TODO: Apply theme to reader
-        console.log(`Reader theme: ${theme}`)
     }
 
     return (
@@ -42,26 +39,26 @@ export function ReaderSettings() {
                     <label className="text-xs font-medium">Theme</label>
                     <div className="flex gap-2">
                         <Button
-                            variant={readerTheme === 'light' ? 'default' : 'outline'}
+                            variant={currentTheme === 'light' ? 'default' : 'outline'}
                             size="sm"
                             className="flex-1"
-                            onClick={() => handleThemeChange('light')}
+                            onClick={() => onThemeChange('light')}
                         >
                             <Sun className="h-4 w-4 mr-2" /> Light
                         </Button>
                         <Button
-                            variant={readerTheme === 'dark' ? 'default' : 'outline'}
+                            variant={currentTheme === 'dark' ? 'default' : 'outline'}
                             size="sm"
                             className="flex-1"
-                            onClick={() => handleThemeChange('dark')}
+                            onClick={() => onThemeChange('dark')}
                         >
                             <Moon className="h-4 w-4 mr-2" /> Dark
                         </Button>
                         <Button
-                            variant={readerTheme === 'sepia' ? 'default' : 'outline'}
+                            variant={currentTheme === 'sepia' ? 'default' : 'outline'}
                             size="sm"
                             className="flex-1"
-                            onClick={() => handleThemeChange('sepia')}
+                            onClick={() => onThemeChange('sepia')}
                         >
                             <Monitor className="h-4 w-4" /> Sepia
                         </Button>

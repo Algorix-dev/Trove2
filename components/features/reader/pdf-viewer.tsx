@@ -6,20 +6,88 @@ import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+import { createBrowserClient } from "@supabase/ssr";
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
-export function PDFViewer({ fileUrl }: { fileUrl: string }) {
+interface PDFViewerProps {
+    fileUrl: string;
+    bookId: string;
+    userId: string;
+    readerTheme?: 'light' | 'dark' | 'sepia';
+}
+
+export function PDFViewer({ fileUrl, bookId, userId, readerTheme = 'light' }: PDFViewerProps) {
     const [numPages, setNumPages] = useState<number>(0);
     const [pageNumber, setPageNumber] = useState<number>(1);
     const [scale, setScale] = useState<number>(1.0);
     const [loading, setLoading] = useState(true);
 
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    // Load bookmark on mount
+    useEffect(() => {
+        const loadBookmark = async () => {
+            const { data } = await supabase
+                .from('reading_progress')
+                .select('current_page')
+                .eq('book_id', bookId)
+                .eq('user_id', userId)
+                .single();
+
+            if (data?.current_page) {
+                setPageNumber(data.current_page);
+            }
+        };
+        loadBookmark();
+    }, [bookId, userId]);
+
+    // Save progress when page changes
+    useEffect(() => {
+        if (pageNumber > 0 && numPages > 0) {
+            const saveProgress = async () => {
+                await supabase
+                    .from('reading_progress')
+                    .upsert({
+                        book_id: bookId,
+                        user_id: userId,
+                        current_page: pageNumber,
+                        total_pages: numPages,
+                        updated_at: new Date().toISOString()
+                    }, {
+                        onConflict: 'book_id,user_id'
+                    });
+            };
+            saveProgress();
+        }
+    }, [pageNumber, numPages, bookId, userId]);
+
     function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
         setNumPages(numPages);
         setLoading(false);
     }
+
+    // Theme styles
+    const themeStyles = {
+        light: {
+            background: 'bg-muted/30',
+            pageBackground: 'bg-white'
+        },
+        dark: {
+            background: 'bg-gray-900',
+            pageBackground: 'bg-gray-800'
+        },
+        sepia: {
+            background: 'bg-amber-50',
+            pageBackground: 'bg-amber-100'
+        }
+    };
+
+    const currentTheme = themeStyles[readerTheme];
 
     return (
         <div className="flex flex-col h-full">
@@ -47,7 +115,7 @@ export function PDFViewer({ fileUrl }: { fileUrl: string }) {
             </div>
 
             {/* Viewer */}
-            <div className="flex-1 overflow-auto flex justify-center p-8 bg-muted/30">
+            <div className={`flex-1 overflow-auto flex justify-center p-8 ${currentTheme.background}`}>
                 <div className="shadow-2xl">
                     <Document
                         file={fileUrl}
@@ -68,7 +136,7 @@ export function PDFViewer({ fileUrl }: { fileUrl: string }) {
                             scale={scale}
                             renderTextLayer={true}
                             renderAnnotationLayer={true}
-                            className="bg-white"
+                            className={currentTheme.pageBackground}
                         />
                     </Document>
                 </div>

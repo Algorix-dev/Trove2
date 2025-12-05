@@ -3,35 +3,77 @@
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Settings, Bookmark, Highlighter, MessageSquare } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect, cloneElement, ReactElement } from "react"
 import { ReaderSettings } from "@/components/features/reader/reader-settings"
+import { createBrowserClient } from "@supabase/ssr"
 
 interface ReaderLayoutProps {
-    children: React.ReactNode
-    title: string
+    children: ReactElement;
+    title: string;
+    bookId: string;
+    userId: string;
 }
 
-export function ReaderLayout({ children, title }: ReaderLayoutProps) {
+export function ReaderLayout({ children, title, bookId, userId }: ReaderLayoutProps) {
     const [showSettings, setShowSettings] = useState(false)
     const [isBookmarked, setIsBookmarked] = useState(false)
     const [highlightMode, setHighlightMode] = useState(false)
+    const [readerTheme, setReaderTheme] = useState<'light' | 'dark' | 'sepia'>('light')
 
-    const handleBookmark = () => {
-        setIsBookmarked(!isBookmarked)
-        // TODO: Save bookmark to database
-        console.log(isBookmarked ? "Bookmark removed" : "Bookmark added")
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    // Load bookmark status
+    useEffect(() => {
+        const loadBookmark = async () => {
+            const { data } = await supabase
+                .from('bookmarks')
+                .select('id')
+                .eq('book_id', bookId)
+                .eq('user_id', userId)
+                .single();
+
+            setIsBookmarked(!!data);
+        };
+        loadBookmark();
+    }, [bookId, userId]);
+
+    const handleBookmark = async () => {
+        if (isBookmarked) {
+            // Remove bookmark
+            await supabase
+                .from('bookmarks')
+                .delete()
+                .eq('book_id', bookId)
+                .eq('user_id', userId);
+            setIsBookmarked(false);
+        } else {
+            // Add bookmark
+            await supabase
+                .from('bookmarks')
+                .insert({
+                    book_id: bookId,
+                    user_id: userId,
+                    created_at: new Date().toISOString()
+                });
+            setIsBookmarked(true);
+        }
     }
 
     const handleHighlight = () => {
         setHighlightMode(!highlightMode)
-        // TODO: Enable text selection and highlighting
         console.log(highlightMode ? "Highlight mode off" : "Highlight mode on")
     }
 
     const handleNotes = () => {
-        // TODO: Open notes modal
         console.log("Open notes for this book")
     }
+
+    const handleThemeChange = (theme: 'light' | 'dark' | 'sepia') => {
+        setReaderTheme(theme);
+    };
 
     return (
         <div className="flex flex-col h-screen bg-background">
@@ -77,10 +119,10 @@ export function ReaderLayout({ children, title }: ReaderLayoutProps) {
 
             {/* Main Content */}
             <main className="flex-1 overflow-hidden relative">
-                {children}
+                {cloneElement(children, { readerTheme })}
                 {showSettings && (
                     <div className="absolute top-4 right-4 z-50">
-                        <ReaderSettings />
+                        <ReaderSettings onThemeChange={handleThemeChange} currentTheme={readerTheme} />
                     </div>
                 )}
             </main>
