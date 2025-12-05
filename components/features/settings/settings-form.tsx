@@ -10,6 +10,7 @@ import { Loader2, Bell, Mail } from "lucide-react"
 import { createBrowserClient } from "@supabase/ssr"
 import { useAuth } from "@/components/providers/auth-provider"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export function SettingsForm() {
     const [fullName, setFullName] = useState("")
@@ -74,10 +75,10 @@ export function SettingsForm() {
             }
 
             router.refresh()
-            alert("Profile updated successfully!")
+            toast.success("Profile updated successfully!")
         } catch (error: any) {
             console.error(error)
-            alert(error.message)
+            toast.error(error.message)
         } finally {
             setLoading(false)
         }

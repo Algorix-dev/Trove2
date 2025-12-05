@@ -18,6 +18,7 @@ import { Plus, Loader2 } from "lucide-react"
 import { createBrowserClient } from "@supabase/ssr"
 import { useAuth } from "@/components/providers/auth-provider"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export function CreateNoteModal() {
     const [open, setOpen] = useState(false)
@@ -55,11 +56,12 @@ export function CreateNoteModal() {
             setBookTitle("")
             setHighlight("")
             setNote("")
+            setNote("")
             router.refresh()
-            alert("Note created successfully!")
+            toast.success("Note created successfully!")
         } catch (error: any) {
             console.error(error)
-            alert(error.message)
+            toast.error(error.message)
         } finally {
             setLoading(false)
         }

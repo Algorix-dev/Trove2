@@ -2,33 +2,115 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, LineChart, Line } from "recharts"
-
-const dailyData = [
-    { name: "Mon", minutes: 45 },
-    { name: "Tue", minutes: 30 },
-    { name: "Wed", minutes: 60 },
-    { name: "Thu", minutes: 25 },
-    { name: "Fri", minutes: 45 },
-    { name: "Sat", minutes: 90 },
-    { name: "Sun", minutes: 60 },
-]
-
-const formatData = [
-    { name: "PDF", value: 400 },
-    { name: "EPUB", value: 300 },
-    { name: "TXT", value: 100 },
-]
+import { createBrowserClient } from "@supabase/ssr"
+import { useEffect, useState } from "react"
+import { format, subDays } from "date-fns"
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-const trendData = [
-    { name: "Week 1", minutes: 200 },
-    { name: "Week 2", minutes: 250 },
-    { name: "Week 3", minutes: 180 },
-    { name: "Week 4", minutes: 300 },
-]
-
 export function AnalyticsCharts() {
+    const [dailyData, setDailyData] = useState<{ name: string; minutes: number }[]>([])
+    const [formatData, setFormatData] = useState<{ name: string; value: number }[]>([])
+    const [trendData, setTrendData] = useState<{ name: string; minutes: number }[]>([])
+    const [loading, setLoading] = useState(true)
+
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) return
+
+            // 1. Fetch Daily Data (Last 7 days)
+            const today = new Date()
+            const lastWeek = subDays(today, 6)
+            
+            const { data: sessions } = await supabase
+                .from('reading_sessions')
+                .select('duration_minutes, session_date')
+                .eq('user_id', user.id)
+                .gte('session_date', format(lastWeek, 'yyyy-MM-dd'))
+                .lte('session_date', format(today, 'yyyy-MM-dd'))
+
+            const chartData = []
+            for (let i = 6; i >= 0; i--) {
+                const date = subDays(today, i)
+                const dateStr = format(date, 'yyyy-MM-dd')
+                const dayName = format(date, 'EEE')
+                
+                const minutes = sessions
+                    ?.filter((s: any) => s.session_date === dateStr)
+                    .reduce((acc: number, s: any) => acc + s.duration_minutes, 0) || 0
+
+                chartData.push({ name: dayName, minutes })
+            }
+            setDailyData(chartData)
+
+            // 2. Fetch Format Data (All books)
+            const { data: books } = await supabase
+                .from('books')
+                .select('format')
+                .eq('user_id', user.id)
+
+            const formatCounts: Record<string, number> = {}
+            books?.forEach((book: any) => {
+                const fmt = (book.format || 'pdf').toUpperCase()
+                formatCounts[fmt] = (formatCounts[fmt] || 0) + 1
+            })
+
+            const formatChartData = Object.entries(formatCounts).map(([name, value]) => ({ name, value }))
+            // If no books, provide placeholder to avoid empty chart
+            if (formatChartData.length === 0) {
+                formatChartData.push({ name: "No Books", value: 1 })
+            }
+            setFormatData(formatChartData)
+
+            // 3. Fetch Monthly Trend (Last 4 weeks)
+            const lastMonth = subDays(today, 28)
+            const { data: monthSessions } = await supabase
+                .from('reading_sessions')
+                .select('duration_minutes, session_date')
+                .eq('user_id', user.id)
+                .gte('session_date', format(lastMonth, 'yyyy-MM-dd'))
+            
+            // Correct logic for labels
+            setTrendData([
+                { name: "3 Weeks Ago", minutes: getWeeklyMinutes(monthSessions, 3) },
+                { name: "2 Weeks Ago", minutes: getWeeklyMinutes(monthSessions, 2) },
+                { name: "Last Week", minutes: getWeeklyMinutes(monthSessions, 1) },
+                { name: "This Week", minutes: getWeeklyMinutes(monthSessions, 0) },
+            ])
+
+            setLoading(false)
+        }
+
+        fetchData()
+    }, [])
+    
+    // Helper for weekly aggregation
+    const getWeeklyMinutes = (sessions: any[] | null, weeksAgo: number) => {
+        const today = new Date()
+        const endDay = subDays(today, weeksAgo * 7)
+        const startDay = subDays(endDay, 6)
+        const startStr = format(startDay, 'yyyy-MM-dd')
+        const endStr = format(endDay, 'yyyy-MM-dd')
+        
+        return sessions
+            ?.filter((s: any) => s.session_date >= startStr && s.session_date <= endStr)
+            .reduce((acc: number, s: any) => acc + s.duration_minutes, 0) || 0
+    }
+
+    if (loading) {
+        return <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 animate-pulse">
+             <Card className="h-[300px] bg-muted/20" />
+             <Card className="h-[300px] bg-muted/20" />
+             <Card className="h-[300px] bg-muted/20 col-span-2" />
+        </div>
+    }
+
     return (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
             <Card>
@@ -41,7 +123,7 @@ export function AnalyticsCharts() {
                             <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                             <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}m`} />
                             <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                            <Bar dataKey="minutes" fill="currentColor" radius={[4, 4, 0, 0]} className="fill-primary" />
+                            <Bar dataKey="minutes" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -92,7 +174,7 @@ export function AnalyticsCharts() {
                             <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                             <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}m`} />
                             <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                            <Line type="monotone" dataKey="minutes" stroke="currentColor" strokeWidth={2} className="stroke-primary" />
+                            <Line type="monotone" dataKey="minutes" stroke="hsl(var(--primary))" strokeWidth={2} activeDot={{ r: 8 }} />
                         </LineChart>
                     </ResponsiveContainer>
                 </CardContent>

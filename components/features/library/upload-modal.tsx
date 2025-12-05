@@ -16,6 +16,7 @@ import { Upload, Loader2, FileText, Image as ImageIcon } from "lucide-react"
 import { createBrowserClient } from "@supabase/ssr"
 import { useAuth } from "@/components/providers/auth-provider"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 // Generate a beautiful gradient based on book title
 function generateGradient(title: string): string {
@@ -59,7 +60,7 @@ export function UploadModal() {
             const validExts = ['pdf', 'epub', 'txt']
 
             if (!validTypes.includes(fileType) && !validExts.includes(fileExt || '')) {
-                alert("Invalid file type. Please upload a PDF, EPUB, or TXT file.")
+                toast.error("Invalid file type. Please upload a PDF, EPUB, or TXT file.")
                 return
             }
 
@@ -92,7 +93,7 @@ export function UploadModal() {
             const validExts = ['pdf', 'epub', 'txt']
 
             if (!validTypes.includes(fileType) && !validExts.includes(fileExt || '')) {
-                alert("Invalid file type. Please upload a PDF, EPUB, or TXT file.")
+                toast.error("Invalid file type. Please upload a PDF, EPUB, or TXT file.")
                 return
             }
 
@@ -159,10 +160,10 @@ export function UploadModal() {
             setFile(null)
             setCoverFile(null)
             router.refresh()
-            alert("Book uploaded successfully!")
+            toast.success("Book uploaded successfully!")
         } catch (error: any) {
             console.error(error)
-            alert(error.message)
+            toast.error(error.message)
         } finally {
             setUploading(false)
         }
