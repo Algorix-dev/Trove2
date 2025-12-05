@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Settings, Bookmark, Highlighter, MessageSquare } from "lucide-react"
 import Link from "next/link"
-import { useState, useEffect, cloneElement, ReactElement } from "react"
+import React, { useState, useEffect, ReactElement } from "react"
 import { ReaderSettings } from "@/components/features/reader/reader-settings"
 import { createBrowserClient } from "@supabase/ssr"
 
@@ -119,7 +119,12 @@ export function ReaderLayout({ children, title, bookId, userId }: ReaderLayoutPr
 
             {/* Main Content */}
             <main className="flex-1 overflow-hidden relative">
-                {cloneElement(children, { readerTheme })}
+                {React.Children.map(children, child => {
+                    if (React.isValidElement(child)) {
+                        return React.cloneElement(child as ReactElement<any>, { readerTheme });
+                    }
+                    return child;
+                })}
                 {showSettings && (
                     <div className="absolute top-4 right-4 z-50">
                         <ReaderSettings onThemeChange={handleThemeChange} currentTheme={readerTheme} />
