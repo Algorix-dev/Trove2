@@ -22,6 +22,7 @@ export default async function ProfilePage() {
     const stats = {
         booksRead: 12,
         streak: 5,
+        highestStreak: 14, // Best streak ever achieved
         totalMinutes: 1450
     }
 
