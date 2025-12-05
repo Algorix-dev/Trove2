@@ -53,13 +53,13 @@ export function UploadModal() {
         if (e.target.files && e.target.files[0]) {
             const selectedFile = e.target.files[0]
             const fileType = selectedFile.type
-            const validTypes = ['application/pdf', 'application/epub+zip']
+            const validTypes = ['application/pdf', 'application/epub+zip', 'text/plain']
 
             const fileExt = selectedFile.name.split('.').pop()?.toLowerCase()
-            const validExts = ['pdf', 'epub']
+            const validExts = ['pdf', 'epub', 'txt']
 
             if (!validTypes.includes(fileType) && !validExts.includes(fileExt || '')) {
-                alert("Invalid file type. Please upload a PDF or EPUB file.")
+                alert("Invalid file type. Please upload a PDF, EPUB, or TXT file.")
                 return
             }
 
@@ -87,12 +87,12 @@ export function UploadModal() {
         const droppedFile = e.dataTransfer.files[0]
         if (droppedFile) {
             const fileType = droppedFile.type
-            const validTypes = ['application/pdf', 'application/epub+zip']
+            const validTypes = ['application/pdf', 'application/epub+zip', 'text/plain']
             const fileExt = droppedFile.name.split('.').pop()?.toLowerCase()
-            const validExts = ['pdf', 'epub']
+            const validExts = ['pdf', 'epub', 'txt']
 
             if (!validTypes.includes(fileType) && !validExts.includes(fileExt || '')) {
-                alert("Invalid file type. Please upload a PDF or EPUB file.")
+                alert("Invalid file type. Please upload a PDF, EPUB, or TXT file.")
                 return
             }
 
@@ -105,7 +105,7 @@ export function UploadModal() {
 
         setUploading(true)
         try {
-            const fileExt = file.name.split('.').pop()
+            const fileExt = file.name.split('.').pop()?.toLowerCase()
             const fileName = `${Math.random()}.${fileExt}`
             const filePath = `${user.id}/${fileName}`
 
@@ -149,7 +149,7 @@ export function UploadModal() {
                     author: "Unknown Author",
                     file_url: filePath,
                     cover_url: coverUrl,
-                    format: fileExt?.toLowerCase() || 'pdf',
+                    format: fileExt || 'pdf',
                     total_pages: 0
                 })
 
@@ -179,7 +179,7 @@ export function UploadModal() {
                 <DialogHeader>
                     <DialogTitle>Upload Book</DialogTitle>
                     <DialogDescription>
-                        Select a PDF or EPUB file to add to your library. Optionally add a cover image.
+                        Select a PDF, EPUB, or TXT file to add to your library. Optionally add a cover image.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
@@ -202,14 +202,14 @@ export function UploadModal() {
                             <>
                                 <Upload className="h-8 w-8 text-muted-foreground mb-2" />
                                 <p className="text-sm font-medium">Click or drag to upload book</p>
-                                <p className="text-xs text-muted-foreground mt-1">PDF or EPUB files only</p>
+                                <p className="text-xs text-muted-foreground mt-1">PDF, EPUB, or TXT files</p>
                             </>
                         )}
                         <input
                             type="file"
                             ref={fileInputRef}
                             className="hidden"
-                            accept=".pdf,.epub"
+                            accept=".pdf,.epub,.txt"
                             onChange={handleFileSelect}
                         />
                     </div>

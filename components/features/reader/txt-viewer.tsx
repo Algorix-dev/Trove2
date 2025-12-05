@@ -1,0 +1,97 @@
+"use client"
+
+import { useEffect, useRef, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+
+interface TxtViewerProps {
+    url: string
+    initialLocation?: string | number
+    onLocationChange?: (location: string, progress: number) => void
+    readerTheme?: 'light' | 'dark' | 'sepia'
+}
+
+export function TxtViewer({ url, initialLocation, onLocationChange, readerTheme = 'light' }: TxtViewerProps) {
+    const [content, setContent] = useState<string>("")
+    const [loading, setLoading] = useState(true)
+    const scrollRef = useRef<HTMLDivElement>(null)
+
+    // Theme styles
+    const themeStyles = {
+        light: {
+            background: 'bg-white',
+            color: 'text-gray-900',
+        },
+        dark: {
+            background: 'bg-gray-900',
+            color: 'text-gray-100',
+        },
+        sepia: {
+            background: 'bg-[#f6f1d1]',
+            color: 'text-[#5f4b32]',
+        }
+    }
+
+    const currentTheme = themeStyles[readerTheme]
+
+    useEffect(() => {
+        const fetchContent = async () => {
+            try {
+                const response = await fetch(url)
+                const text = await response.text()
+                setContent(text)
+                setLoading(false)
+            } catch (error) {
+                console.error("Failed to load text file:", error)
+                setLoading(false)
+            }
+        }
+
+        fetchContent()
+    }, [url])
+
+    // Restore scroll position
+    useEffect(() => {
+        if (!loading && initialLocation && scrollRef.current) {
+            const viewport = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement
+            if (viewport) {
+                viewport.scrollTop = Number(initialLocation)
+            }
+        }
+    }, [loading, initialLocation])
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const target = e.currentTarget
+        const scrollTop = target.scrollTop
+        const scrollHeight = target.scrollHeight
+        const clientHeight = target.clientHeight
+
+        const progress = Math.round((scrollTop / (scrollHeight - clientHeight)) * 100)
+
+        if (onLocationChange) {
+            onLocationChange(scrollTop.toString(), progress)
+        }
+    }
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-full">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        )
+    }
+
+    return (
+        <div className={`h-full w-full ${currentTheme.background} ${currentTheme.color} transition-colors duration-300`}>
+            <ScrollArea
+                className="h-full w-full px-4 md:px-8 py-8"
+                ref={scrollRef}
+                onScrollCapture={handleScroll}
+            >
+                <div className="max-w-3xl mx-auto font-serif text-lg leading-relaxed whitespace-pre-wrap pb-20">
+                    {content}
+                </div>
+            </ScrollArea>
+        </div>
+    )
+}

@@ -1,5 +1,7 @@
 import { ReaderLayout } from "@/components/features/reader/reader-layout"
 import { PDFViewer } from "@/components/features/reader/pdf-viewer"
+import { EpubViewer } from "@/components/features/reader/epub-viewer"
+import { TxtViewer } from "@/components/features/reader/txt-viewer"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
@@ -32,9 +34,18 @@ export default async function ReaderPage({ params }: { params: Promise<{ id: str
         .from('books')
         .createSignedUrl(book.file_url, 3600) // 1 hour expiry
 
+    const fileUrl = data?.signedUrl || ""
+    const format = book.format || 'pdf'
+
     return (
         <ReaderLayout title={book.title} bookId={id} userId={user.id}>
-            <PDFViewer fileUrl={data?.signedUrl || ""} bookId={id} userId={user.id} />
+            {format === 'epub' ? (
+                <EpubViewer url={fileUrl} />
+            ) : format === 'txt' ? (
+                <TxtViewer url={fileUrl} />
+            ) : (
+                <PDFViewer fileUrl={fileUrl} bookId={id} userId={user.id} />
+            )}
         </ReaderLayout>
     )
 }
