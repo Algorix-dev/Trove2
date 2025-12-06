@@ -18,7 +18,7 @@ create table public.books (
   author text,
   file_url text not null,
   cover_url text,
-  format text check (format in ('pdf', 'epub')),
+  format text check (format in ('pdf', 'epub', 'txt')),
   total_pages integer,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -29,8 +29,11 @@ create table public.reading_progress (
   user_id uuid references auth.users on delete cascade not null,
   book_id uuid references public.books on delete cascade not null,
   current_page integer default 0,
+  total_pages integer default 0,
   progress_percentage float default 0,
+  epub_cfi text,
   last_read_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
   unique(user_id, book_id)
 );
 

@@ -9,14 +9,17 @@ import { BookOpen, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { createBrowserClient } from "@supabase/ssr"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export default function SignupPage() {
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false)
+    const [resendLoading, setResendLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
+    const [signupEmail, setSignupEmail] = useState("")
     const router = useRouter()
 
     const supabase = createBrowserClient(
@@ -46,6 +49,7 @@ export default function SignupPage() {
 
             // Show success message instead of redirecting
             setSuccess(true)
+            setSignupEmail(email)
             setName("")
             setEmail("")
             setPassword("")
@@ -67,6 +71,28 @@ export default function SignupPage() {
             if (error) throw error
         } catch (err: any) {
             setError(err.message)
+        }
+    }
+
+    const handleResendConfirmation = async () => {
+        if (!signupEmail) return
+
+        setResendLoading(true)
+        setError(null)
+
+        try {
+            const { error } = await supabase.auth.resend({
+                type: 'signup',
+                email: signupEmail,
+            })
+
+            if (error) throw error
+
+            toast.success("Confirmation email resent! Please check your inbox.")
+        } catch (err: any) {
+            setError(err.message)
+        } finally {
+            setResendLoading(false)
         }
     }
 
@@ -92,9 +118,26 @@ export default function SignupPage() {
                                 </div>
                             )}
                             {success && (
-                                <div className="bg-green-500/15 text-green-700 dark:text-green-400 text-sm p-3 rounded-md space-y-2">
+                                <div className="bg-green-500/15 text-green-700 dark:text-green-400 text-sm p-3 rounded-md space-y-3">
                                     <p className="font-semibold">✅ Account created successfully!</p>
                                     <p>Please check your email to confirm your account before logging in.</p>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleResendConfirmation}
+                                        disabled={resendLoading}
+                                        className="w-full"
+                                    >
+                                        {resendLoading ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Resending...
+                                            </>
+                                        ) : (
+                                            "Resend Confirmation Email"
+                                        )}
+                                    </Button>
                                 </div>
                             )}
                             <div className="space-y-2">

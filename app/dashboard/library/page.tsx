@@ -16,14 +16,18 @@ export default async function LibraryPage() {
     // Fetch books with reading progress
     const { data: booksData } = await supabase
         .from('books')
-        .select('*')
+        .select(`
+            *,
+            reading_progress (
+                progress_percentage
+            )
+        `)
         .order('created_at', { ascending: false })
 
     // Transform data to include progress percentage
-    // Transform data (progress currently disabled for debugging)
     const books = booksData?.map(book => ({
         ...book,
-        progress: 0
+        progress: book.reading_progress?.[0]?.progress_percentage || 0
     })) || []
 
     return (

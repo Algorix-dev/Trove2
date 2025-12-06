@@ -38,7 +38,7 @@ export default async function DashboardPage() {
     const levelTitle = levelInfo?.title || "Reader"
 
     // Use username if available, otherwise full name, otherwise "Reader"
-    const name = profile?.username || profile?.full_name || user.user_metadata?.full_name || "Reader"
+    const name = profile?.username || profile?.full_name?.split(' ')[0] || user.user_metadata?.full_name?.split(' ')[0] || "Reader"
     const hour = new Date().getHours()
     let greeting = "Good Morning"
     if (hour >= 12 && hour < 17) greeting = "Good Afternoon"

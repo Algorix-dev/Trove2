@@ -15,6 +15,7 @@ interface ContinueReadingBook {
     cover_url?: string
     current_page: number
     total_pages: number
+    progress_percentage?: number
 }
 
 export function ContinueReading() {
@@ -36,15 +37,18 @@ export function ContinueReading() {
                 .from('reading_progress')
                 .select(`
                     current_page,
-                    total_pages,
+                    progress_percentage,
                     books (
                         id,
                         title,
                         author,
-                        cover_url
+                        cover_url,
+                        total_pages
                     )
                 `)
                 .eq('user_id', user.id)
+                .gt('progress_percentage', 0)
+                .lt('progress_percentage', 100)
                 .order('updated_at', { ascending: false })
                 .limit(1)
                 .single()
@@ -57,7 +61,7 @@ export function ContinueReading() {
                     author: bookData.author,
                     cover_url: bookData.cover_url,
                     current_page: data.current_page,
-                    total_pages: data.total_pages
+                    total_pages: bookData.total_pages || 0
                 })
             }
 
@@ -94,7 +98,7 @@ export function ContinueReading() {
         )
     }
 
-    const progress = Math.round((book.current_page / book.total_pages) * 100)
+    const progress = book.progress_percentage || (book.total_pages > 0 ? Math.round((book.current_page / book.total_pages) * 100) : 0)
     const isGradient = book.cover_url?.startsWith('gradient:')
     const gradientStyle = isGradient ? book.cover_url?.replace('gradient:', '') : null
 

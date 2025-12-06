@@ -28,12 +28,24 @@ export default function LoginPage() {
         setError(null)
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({
+            const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             })
 
-            if (error) throw error
+            if (error) {
+                // Check if error is related to email confirmation
+                if (error.message.includes('Email not confirmed')) {
+                    throw new Error('Please confirm your email address before logging in. Check your inbox for the confirmation link.')
+                }
+                throw error
+            }
+
+            // Additional check for email confirmation status
+            if (data.user && !data.user.email_confirmed_at) {
+                await supabase.auth.signOut()
+                throw new Error('Please confirm your email address before logging in. Check your inbox for the confirmation link.')
+            }
 
             router.push("/dashboard")
             router.refresh()
