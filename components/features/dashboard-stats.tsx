@@ -11,8 +11,6 @@ export function DashboardStats() {
         totalMinutes: 0,
         booksRead: 0,
         dailyGoal: 30,
-        booksRead: 0,
-        dailyGoal: 30,
         todayMinutes: 0,
         readingNow: 0
     })
