@@ -24,6 +24,24 @@ export function EpubViewer({ url, initialLocation, onLocationChange, readerTheme
     const [currentCfi, setCurrentCfi] = useState<string>("")
     const [progress, setProgress] = useState(0)
 
+    const updateProgress = () => {
+        if (!bookRef.current || !renditionRef.current) return
+
+        const currentLocation = renditionRef.current.currentLocation()
+        if (currentLocation && currentLocation.start) {
+            const cfi = currentLocation.start.cfi
+            // Get percentage
+            const percentage = bookRef.current.locations.percentageFromCfi(cfi)
+            const progressValue = Math.round(percentage * 100)
+
+            setProgress(progressValue)
+
+            if (onLocationChange) {
+                onLocationChange(cfi, progressValue)
+            }
+        }
+    }
+
     // Initialize EPUB
     useEffect(() => {
         if (!viewerRef.current) return
@@ -50,7 +68,6 @@ export function EpubViewer({ url, initialLocation, onLocationChange, readerTheme
             }
 
             // Generate locations for progress tracking
-            // This can be slow for large books, so we do it in background
             book.locations.generate(1000).then(() => {
                 setIsReady(true)
                 updateProgress()
@@ -85,67 +102,62 @@ export function EpubViewer({ url, initialLocation, onLocationChange, readerTheme
 
         // Select theme
         themes.select(readerTheme)
-        const updateProgress = () => {
-            if (!bookRef.current || !renditionRef.current) return
+    }, [readerTheme, isReady])
 
-            const currentLocation = renditionRef.current.currentLocation()
-            if (currentLocation && currentLocation.start) {
-                const cfi = currentLocation.start.cfi
-                // Get percentage
-                const percentage = bookRef.current.locations.percentageFromCfi(cfi)
-                const progressValue = Math.round(percentage * 100)
-
-                setProgress(progressValue)
-
-                if (onLocationChange) {
-                    onLocationChange(cfi, progressValue)
-                }
+    // Track reading time and award XP
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            if (isReady) {
+                await GamificationService.awardXP(userId, 1, "Reading Time", bookId)
             }
+        }, 60000) // Every minute
+
+        return () => clearInterval(interval)
+    }, [userId, isReady, bookId])
+
+    const prevPage = () => {
+        if (renditionRef.current) {
+            renditionRef.current.prev()
         }
+    }
 
-        const prevPage = () => {
-            if (renditionRef.current) {
-                renditionRef.current.prev()
-            }
+    const nextPage = () => {
+        if (renditionRef.current) {
+            renditionRef.current.next()
         }
+    }
 
-        const nextPage = () => {
-            if (renditionRef.current) {
-                renditionRef.current.next()
-            }
-        }
+    return (
+        <div className="flex flex-col h-full relative group">
+            <div className="flex-1 relative">
+                <div ref={viewerRef} className="h-full w-full" />
 
-        return (
-            <div className="flex flex-col h-full relative group">
-                <div className="flex-1 relative">
-                    <div ref={viewerRef} className="h-full w-full" />
-
-                    {/* Navigation Overlays */}
-                    <div className="absolute inset-y-0 left-0 w-16 flex items-center justify-start opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-12 w-12 rounded-full bg-background/80 shadow-md ml-4"
-                            onClick={prevPage}
-                        >
-                            <ChevronLeft className="h-6 w-6" />
-                        </Button>
-                    </div>
-                    <div className="absolute inset-y-0 right-0 w-16 flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-12 w-12 rounded-full bg-background/80 shadow-md mr-4"
-                            onClick={nextPage}
-                        >
-                            <ChevronRight className="h-6 w-6" />
-                        </Button>
-                    </div>
+                {/* Navigation Overlays */}
+                <div className="absolute inset-y-0 left-0 w-16 flex items-center justify-start opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-12 w-12 rounded-full bg-background/80 shadow-md ml-4"
+                        onClick={prevPage}
+                    >
+                        <ChevronLeft className="h-6 w-6" />
+                    </Button>
                 </div>
-
-                <div className="h-8 border-t bg-background flex items-center justify-center text-xs text-muted-foreground">
-                    {progress}% Read
+                <div className="absolute inset-y-0 right-0 w-16 flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-12 w-12 rounded-full bg-background/80 shadow-md mr-4"
+                        onClick={nextPage}
+                    >
+                        <ChevronRight className="h-6 w-6" />
+                    </Button>
                 </div>
             </div>
-        )
-    }
+
+            <div className="h-8 border-t bg-background flex items-center justify-center text-xs text-muted-foreground">
+                {progress}% Read
+            </div>
+        </div>
+    )
+}

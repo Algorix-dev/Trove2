@@ -33,6 +33,7 @@ export function TxtViewer({ url, initialLocation, onLocationChange, readerTheme 
             background: 'bg-[#f6f1d1]',
             color: 'text-[#5f4b32]',
         }
+    }
     const currentTheme = themeStyles[readerTheme]
 
     // Track reading time and award XP
