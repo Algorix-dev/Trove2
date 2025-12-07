@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Settings, Bookmark, Highlighter, MessageSquare } from "lucide-react"
+import { ArrowLeft, Settings, Bookmark } from "lucide-react"
 import Link from "next/link"
 import React, { useState, useEffect, ReactElement } from "react"
 import { ReaderSettings } from "@/components/features/reader/reader-settings"
@@ -17,7 +17,6 @@ interface ReaderLayoutProps {
 export function ReaderLayout({ children, title, bookId, userId }: ReaderLayoutProps) {
     const [showSettings, setShowSettings] = useState(false)
     const [isBookmarked, setIsBookmarked] = useState(false)
-    const [highlightMode, setHighlightMode] = useState(false)
     const [readerTheme, setReaderTheme] = useState<'light' | 'dark' | 'sepia'>('light')
 
     const supabase = createBrowserClient(
@@ -62,14 +61,7 @@ export function ReaderLayout({ children, title, bookId, userId }: ReaderLayoutPr
         }
     }
 
-    const handleHighlight = () => {
-        setHighlightMode(!highlightMode)
-        console.log(highlightMode ? "Highlight mode off" : "Highlight mode on")
-    }
 
-    const handleNotes = () => {
-        console.log("Open notes for this book")
-    }
 
     const handleThemeChange = (theme: 'light' | 'dark' | 'sepia') => {
         setReaderTheme(theme);
@@ -96,21 +88,7 @@ export function ReaderLayout({ children, title, bookId, userId }: ReaderLayoutPr
                     >
                         <Bookmark className={`h-5 w-5 ${isBookmarked ? "fill-current" : ""}`} />
                     </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleHighlight}
-                        className={highlightMode ? "text-primary bg-primary/10" : ""}
-                    >
-                        <Highlighter className="h-5 w-5" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleNotes}
-                    >
-                        <MessageSquare className="h-5 w-5" />
-                    </Button>
+
                     <Button variant="ghost" size="icon" onClick={() => setShowSettings(!showSettings)}>
                         <Settings className="h-5 w-5" />
                     </Button>
