@@ -71,7 +71,7 @@ export function BookmarksList({ userId }: { userId: string }) {
             console.error('Error fetching bookmarks:', error)
             toast.error("Failed to load bookmarks")
         } else {
-            setBookmarks(data as BookmarkData[])
+            setBookmarks(data as any as BookmarkData[])
         }
         setLoading(false)
     }
