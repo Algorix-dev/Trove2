@@ -8,6 +8,7 @@ import { AchievementConfetti } from "@/components/features/gamification/achievem
 import { DailyGoalCelebration } from "@/components/features/gamification/daily-goal-celebration"
 import { LevelUpCelebration } from "@/components/features/gamification/level-up-celebration"
 import { ReadingStreakCalendar } from "@/components/features/analytics/reading-streak-calendar"
+import { ReadingGoals } from "@/components/features/analytics/reading-goals"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
@@ -64,12 +65,15 @@ export default async function DashboardPage() {
 
             <DashboardStats />
 
-            <LevelProgress
-                level={currentLevel}
-                currentXP={currentXP}
-                nextLevelXP={nextLevelXP}
-                levelTitle={levelTitle}
-            />
+            <div className="grid gap-6 md:grid-cols-2">
+                <LevelProgress
+                    level={currentLevel}
+                    currentXP={currentXP}
+                    nextLevelXP={nextLevelXP}
+                    levelTitle={levelTitle}
+                />
+                <ReadingGoals />
+            </div>
 
             <ReadingStreakCalendar />
 
