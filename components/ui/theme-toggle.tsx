@@ -16,33 +16,9 @@ export function ThemeToggle() {
 
     useEffect(() => {
         if (mounted) {
-            setCurrentTheme(resolvedTheme)
-        }
-    }, [mounted, resolvedTheme])
-
-    if (!mounted) {
-        return (
-            <Button variant="ghost" size="icon" className="relative">
-                <Moon className="h-5 w-5" />
-            </Button>
-        )
-    }
-
-    const isDark = currentTheme === "dark"
-
-    return (
-        <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(isDark ? "light" : "dark")}
-            className="relative"
-        >
-            {isDark ? (
-                <Sun className="h-5 w-5 transition-transform duration-200 hover:rotate-12" />
-            ) : (
-                <Moon className="h-5 w-5 transition-transform duration-200 hover:-rotate-12" />
-            )}
-            <span className="sr-only">Toggle theme</span>
-        </Button>
+            )
+}
+<span className="sr-only">Toggle theme</span>
+        </Button >
     )
 }
