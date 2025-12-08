@@ -13,9 +13,10 @@ interface TxtViewerProps {
     readerTheme?: 'light' | 'dark' | 'sepia'
     userId: string
     bookId: string
+    onLocationUpdate?: (data: { currentPage?: number; currentCFI?: string; progressPercentage?: number }) => void
 }
 
-export function TxtViewer({ url, initialLocation, onLocationChange, readerTheme = 'light', userId, bookId }: TxtViewerProps) {
+export function TxtViewer({ url, initialLocation, onLocationChange, readerTheme = 'light', userId, bookId, onLocationUpdate }: TxtViewerProps) {
     const [content, setContent] = useState<string>("")
     const [loading, setLoading] = useState(true)
     const scrollRef = useRef<HTMLDivElement>(null)
@@ -109,6 +110,13 @@ export function TxtViewer({ url, initialLocation, onLocationChange, readerTheme 
 
         if (onLocationChange) {
             onLocationChange(scrollTop.toString(), progress)
+        }
+
+        // Notify parent about location change
+        if (onLocationUpdate) {
+            onLocationUpdate({
+                progressPercentage: progress
+            });
         }
 
         saveProgress(progress)

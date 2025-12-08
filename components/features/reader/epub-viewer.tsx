@@ -14,9 +14,10 @@ interface EpubViewerProps {
     readerTheme?: 'light' | 'dark' | 'sepia'
     userId: string
     bookId: string
+    onLocationUpdate?: (data: { currentPage?: number; currentCFI?: string; progressPercentage?: number }) => void
 }
 
-export function EpubViewer({ url, initialLocation, onLocationChange, readerTheme = 'light', userId, bookId }: EpubViewerProps) {
+export function EpubViewer({ url, initialLocation, onLocationChange, readerTheme = 'light', userId, bookId, onLocationUpdate }: EpubViewerProps) {
     const viewerRef = useRef<HTMLDivElement>(null)
     const renditionRef = useRef<any>(null)
     const bookRef = useRef<any>(null)
@@ -38,6 +39,13 @@ export function EpubViewer({ url, initialLocation, onLocationChange, readerTheme
 
             if (onLocationChange) {
                 onLocationChange(cfi, progressValue)
+            }
+
+            if (onLocationUpdate) {
+                onLocationUpdate({
+                    currentCFI: cfi,
+                    progressPercentage: progressValue
+                })
             }
 
             // Debounced save or just save on significant change?

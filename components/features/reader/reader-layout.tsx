@@ -7,6 +7,12 @@ import React, { useState, useEffect, ReactElement } from "react"
 import { ReaderSettings } from "@/components/features/reader/reader-settings"
 import { createBrowserClient } from "@supabase/ssr"
 
+interface LocationData {
+    currentPage?: number;
+    currentCFI?: string;
+    progressPercentage?: number;
+}
+
 interface ReaderLayoutProps {
     children: ReactElement;
     title: string;
@@ -14,10 +20,18 @@ interface ReaderLayoutProps {
     userId: string;
 }
 
+import { toast } from "sonner"
+
 export function ReaderLayout({ children, title, bookId, userId }: ReaderLayoutProps) {
     const [showSettings, setShowSettings] = useState(false)
     const [isBookmarked, setIsBookmarked] = useState(false)
     const [readerTheme, setReaderTheme] = useState<'light' | 'dark' | 'sepia'>('light')
+    const [currentLocation, setCurrentLocation] = useState<LocationData>({})
+
+    // Detect location updates
+    const handleLocationUpdate = (data: LocationData) => {
+        setCurrentLocation(prev => ({ ...prev, ...data }))
+    }
 
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -42,22 +56,35 @@ export function ReaderLayout({ children, title, bookId, userId }: ReaderLayoutPr
     const handleBookmark = async () => {
         if (isBookmarked) {
             // Remove bookmark
-            await supabase
+            const { error } = await supabase
                 .from('bookmarks')
                 .delete()
                 .eq('book_id', bookId)
                 .eq('user_id', userId);
-            setIsBookmarked(false);
+
+            if (!error) {
+                setIsBookmarked(false);
+                toast.success("Bookmark removed")
+            }
         } else {
-            // Add bookmark
-            await supabase
+            // Add bookmark with location context
+            const { error } = await supabase
                 .from('bookmarks')
                 .insert({
                     book_id: bookId,
                     user_id: userId,
+                    page_number: currentLocation.currentPage,
+                    epub_cfi: currentLocation.currentCFI,
+                    progress_percentage: currentLocation.progressPercentage,
                     created_at: new Date().toISOString()
                 });
-            setIsBookmarked(true);
+
+            if (!error) {
+                setIsBookmarked(true);
+                toast.success("Bookmark saved")
+            } else {
+                toast.error("Failed to save bookmark")
+            }
         }
     }
 
@@ -99,7 +126,10 @@ export function ReaderLayout({ children, title, bookId, userId }: ReaderLayoutPr
             <main className="flex-1 overflow-hidden relative">
                 {React.Children.map(children, child => {
                     if (React.isValidElement(child)) {
-                        return React.cloneElement(child as ReactElement<any>, { readerTheme });
+                        return React.cloneElement(child as ReactElement<any>, {
+                            readerTheme,
+                            onLocationUpdate: handleLocationUpdate
+                        });
                     }
                     return child;
                 })}

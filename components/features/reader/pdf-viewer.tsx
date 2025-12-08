@@ -17,9 +17,10 @@ interface PDFViewerProps {
     bookId: string;
     userId: string;
     readerTheme?: 'light' | 'dark' | 'sepia';
+    onLocationUpdate?: (data: { currentPage?: number; currentCFI?: string; progressPercentage?: number }) => void;
 }
 
-export function PDFViewer({ fileUrl, bookId, userId, readerTheme = 'light' }: PDFViewerProps) {
+export function PDFViewer({ fileUrl, bookId, userId, readerTheme = 'light', onLocationUpdate }: PDFViewerProps) {
     const [numPages, setNumPages] = useState<number>(0);
     const [pageNumber, setPageNumber] = useState<number>(1);
     const [scale, setScale] = useState<number>(1.0);
@@ -50,6 +51,16 @@ export function PDFViewer({ fileUrl, bookId, userId, readerTheme = 'light' }: PD
     // Save progress when page changes
     useEffect(() => {
         if (pageNumber > 0 && numPages > 0) {
+            const progressPercentage = Math.round((pageNumber / numPages) * 100);
+
+            // Notify parent about location change
+            if (onLocationUpdate) {
+                onLocationUpdate({
+                    currentPage: pageNumber,
+                    progressPercentage
+                });
+            }
+
             const saveProgress = async () => {
                 await supabase
                     .from('reading_progress')
@@ -58,7 +69,7 @@ export function PDFViewer({ fileUrl, bookId, userId, readerTheme = 'light' }: PD
                         user_id: userId,
                         current_page: pageNumber,
                         total_pages: numPages,
-                        progress_percentage: Math.round((pageNumber / numPages) * 100),
+                        progress_percentage: progressPercentage,
                         updated_at: new Date().toISOString()
                     }, {
                         onConflict: 'book_id,user_id'
@@ -66,7 +77,7 @@ export function PDFViewer({ fileUrl, bookId, userId, readerTheme = 'light' }: PD
             };
             saveProgress();
         }
-    }, [pageNumber, numPages, bookId, userId]);
+    }, [pageNumber, numPages, bookId, userId, onLocationUpdate]);
 
     // Track reading time and award XP
     useEffect(() => {
