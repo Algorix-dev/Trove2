@@ -186,7 +186,7 @@ export function BookmarksList({ userId }: { userId: string }) {
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold text-lg truncate">{book.title}</h3>
+                                <h3 className="font-semibold text-lg line-clamp-2">{book.title}</h3>
                                 <p className="text-sm text-muted-foreground truncate">{book.author}</p>
                                 <div className="flex items-center gap-2 mt-1">
                                     <span className="text-xs bg-secondary px-2 py-1 rounded uppercase">
