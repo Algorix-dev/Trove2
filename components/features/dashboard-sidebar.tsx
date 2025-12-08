@@ -3,53 +3,48 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Library, Bookmark, Highlighter, BarChart3, Users, Settings, BookOpen, User } from "lucide-react"
-
-const routes = [
-    {
-        label: "Dashboard",
-        icon: LayoutDashboard,
-        href: "/dashboard",
-    },
-    {
-        label: "Library",
-        icon: Library,
-        href: "/dashboard/library",
-    },
-    {
-        label: "Bookmarks",
-        icon: Bookmark,
-        href: "/dashboard/bookmarks",
-    },
-    {
-        label: "Notes",
-        icon: Highlighter,
-        href: "/dashboard/notes",
-    },
-    {
-        label: "Analytics",
-        icon: BarChart3,
-        href: "/dashboard/analytics",
-    },
-    {
-        label: "Community",
-        icon: Users,
-        href: "/dashboard/community",
-    },
-    {
-        label: "Profile",
-        icon: User,
-        href: "/dashboard/profile",
-    },
-    {
-        label: "Settings",
-        icon: Settings,
-        href: "/dashboard/settings",
-    },
-]
+import { Home, Library, BookOpen, Bookmark, StickyNote, Quote, Users, Settings } from "lucide-react"
 
 export function DashboardSidebar() {
     const pathname = usePathname()
+
+    const routes = [
+        {
+            label: "Dashboard",
+            icon: Home,
+            href: "/dashboard",
+        },
+        {
+            label: "Library",
+            icon: Library,
+            href: "/dashboard/library",
+        },
+        {
+            label: "Bookmarks",
+            icon: Bookmark,
+            href: "/dashboard/bookmarks",
+        },
+        {
+            label: "Notes",
+            icon: StickyNote,
+            href: "/dashboard/notes",
+        },
+        {
+            label: "Quotes",
+            icon: Quote,
+            href: "/dashboard/quotes",
+        },
+        {
+            label: "Community",
+            icon: Users,
+            href: "/dashboard/community",
+        },
+        {
+            label: "Settings",
+            icon: Settings,
+            href: "/dashboard/settings",
+        },
+    ]
 
     return (
         <div className="space-y-4 py-4 flex flex-col h-full bg-card border-r transition-colors duration-300">
