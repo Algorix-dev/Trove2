@@ -1,47 +1,74 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { LibraryContent } from "@/components/features/library/library-content"
 import { UploadModal } from "@/components/features/library/upload-modal"
-import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
+import { createBrowserClient } from "@supabase/ssr"
+import { useAuth } from "@/components/providers/auth-provider"
+import { useRouter } from "next/navigation"
 
-// Force dynamic rendering to always fetch fresh data
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+export default function LibraryPage() {
+    const { user, loading: authLoading } = useAuth()
+    const router = useRouter()
+    const [books, setBooks] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
 
-export default async function LibraryPage() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
 
-    if (!user) {
-        redirect("/login")
+    useEffect(() => {
+        if (authLoading) return
+
+        if (!user) {
+            router.push("/login")
+            return
+        }
+
+        const fetchBooks = async () => {
+            // Fetch books with reading progress
+            const { data: booksData } = await supabase
+                .from('books')
+                .select(`
+                    id,
+                    user_id,
+                    title,
+                    author,
+                    cover_url,
+                    file_url,
+                    format,
+                    total_pages,
+                    created_at,
+                    updated_at,
+                    reading_progress (
+                        progress_percentage
+                    )
+                `)
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+
+            // Transform data to include progress percentage
+            const transformedBooks = booksData?.map(book => ({
+                ...book,
+                reading_progress: undefined,
+                progress: book.reading_progress?.[0]?.progress_percentage || 0
+            })) || []
+
+            setBooks(transformedBooks)
+            setLoading(false)
+        }
+
+        fetchBooks()
+    }, [user, authLoading, router, supabase])
+
+    if (authLoading || loading) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+        )
     }
-
-    // Fetch books with reading progress
-    const { data: booksData } = await supabase
-        .from('books')
-        .select(`
-            id,
-            user_id,
-            title,
-            author,
-            cover_url,
-            file_url,
-            format,
-            total_pages,
-            created_at,
-            updated_at,
-            reading_progress (
-                progress_percentage
-            )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-
-    // Transform data to include progress percentage
-    const books = booksData?.map(book => ({
-        ...book,
-        reading_progress: undefined, // Remove the nested object
-        progress: book.reading_progress?.[0]?.progress_percentage || 0
-    })) || []
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
