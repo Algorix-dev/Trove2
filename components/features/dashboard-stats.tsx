@@ -112,12 +112,12 @@ export function DashboardStats() {
             </Card>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Minutes</CardTitle>
+                    <CardTitle className="text-sm font-medium">Today's Minutes</CardTitle>
                     <Clock className="h-4 w-4 text-blue-500" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalMinutes}</div>
-                    <p className="text-xs text-muted-foreground">Lifetime reading time</p>
+                    <div className="text-2xl font-bold">{stats.todayMinutes}</div>
+                    <p className="text-xs text-muted-foreground">Reading time today</p>
                 </CardContent>
             </Card>
             <Card>
