@@ -58,7 +58,7 @@ export function QuotesList({ userId }: { userId: string }) {
             .order('created_at', { ascending: false })
 
         if (data) {
-            setQuotes(data as BookQuote[])
+            setQuotes(data as any)
         }
         setLoading(false)
     }

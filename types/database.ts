@@ -108,6 +108,7 @@ export interface Level {
 export interface BookWithProgress extends Book {
     progress_percentage?: number
     current_page?: number
+    progress?: number // Alias for compatibility with BookGrid
 }
 
 export interface NoteWithBook extends Note {

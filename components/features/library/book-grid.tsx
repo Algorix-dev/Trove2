@@ -4,14 +4,14 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { BookOpen, Trash2 } from "lucide-react"
 import Link from "next/link"
-import { type Book } from "@/types"
+import { type BookWithProgress } from "@/types/database"
 import { createBrowserClient } from "@supabase/ssr"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 
 interface BookGridProps {
-    books: Book[]
+    books: BookWithProgress[]
 }
 
 import { DeleteConfirmDialog } from "@/components/features/delete-confirm-dialog"
