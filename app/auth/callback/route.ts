@@ -4,31 +4,39 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
     const requestUrl = new URL(request.url)
     const code = requestUrl.searchParams.get('code')
-    const origin = requestUrl.origin
-    const error = requestUrl.searchParams.get('error')
-    const errorDescription = requestUrl.searchParams.get('error_description')
+    import { createClient } from '@/lib/supabase/server'
+    import { NextResponse } from 'next/server'
+    import { cookies } from 'next/headers'
 
-    // Handle OAuth errors
-    if (error) {
-        console.error('Auth error:', error, errorDescription)
-        return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(errorDescription || 'Authentication failed')}`)
-    }
+    export async function GET(request: Request) {
+        const requestUrl = new URL(request.url)
+        const code = requestUrl.searchParams.get('code')
+        const origin = requestUrl.origin
 
-    if (code) {
-        try {
-            const supabase = await createClient()
-            const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+        if (code) {
+            try {
+                const cookieStore = await cookies()
+                const supabase = await createClient()
 
-            if (exchangeError) {
-                console.error('Session exchange error:', exchangeError)
-                return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent('Failed to complete authentication')}`)
+                // Exchange code for session
+                const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
+                if (error) {
+                    console.error('Auth callback error:', error)
+                    return NextResponse.redirect(`${origin}/login?error=auth_failed`)
+                }
+
+                if (data.session) {
+                    // Session is automatically set in cookies by the Supabase client
+                    console.log('Session established successfully')
+                    return NextResponse.redirect(`${origin}/dashboard`)
+                }
+            } catch (error) {
+                console.error('Auth callback exception:', error)
+                return NextResponse.redirect(`${origin}/login?error=callback_failed`)
             }
-        } catch (err) {
-            console.error('Unexpected auth error:', err)
-            return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent('An unexpected error occurred')}`)
         }
-    }
 
-    // Redirect to dashboard after successful authentication
-    return NextResponse.redirect(`${origin}/dashboard`)
-}
+        // No code present, redirect to login
+        return NextResponse.redirect(`${origin}/login`)
+    }
