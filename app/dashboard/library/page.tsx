@@ -25,10 +25,10 @@ export default function LibraryPage() {
     }>>([])
     const [loading, setLoading] = useState(true)
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+            const supabase = createBrowserClient(
+                process.env['NEXT_PUBLIC_SUPABASE_URL']!,
+                process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!
+            )
 
     useEffect(() => {
         if (authLoading) return

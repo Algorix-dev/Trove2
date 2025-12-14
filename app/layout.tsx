@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  metadataBase: new URL(process.env['NEXT_PUBLIC_SITE_URL'] || "http://localhost:3000"),
   openGraph: {
     type: "website",
     locale: "en_US",
