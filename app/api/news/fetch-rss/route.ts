@@ -8,7 +8,7 @@ const parser = new Parser({
   }
 })
 
-// Google News RSS feeds (FREE, no API key, works in production)
+// Google News RSS feeds (free, no API key, works in production)
 const RSS_FEEDS = {
   books: 'https://news.google.com/rss/search?q=books&hl=en&gl=US&ceid=US:en',
   manga: 'https://news.google.com/rss/search?q=manga&hl=en&gl=US&ceid=US:en',
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       if (userGenres.some(g => ['Anime'].includes(g))) {
         feedsToFetch.push(RSS_FEEDS.anime)
       }
-      if (userGenres.some(g => ['Fiction', 'Non-Fiction', 'Mystery', 'Romance', 'Science Fiction', 'Fantasy'].includes(g))) {
+      if (userGenres.some(g => ['Fiction', 'Non-Fiction', 'Mystery', 'Romance'].includes(g))) {
         feedsToFetch.push(RSS_FEEDS.books, RSS_FEEDS.bookReleases)
       }
       if (feedsToFetch.length === 0) {
@@ -73,6 +73,10 @@ export async function GET(request: NextRequest) {
               imageUrl = item['media:content'].$.url
             } else if (item['media:thumbnail']) {
               imageUrl = item['media:thumbnail'].$.url
+            } else if (item.contentSnippet) {
+              // Try to extract image from content
+              const imgMatch = item.contentSnippet.match(/<img[^>]+src="([^"]+)"/)
+              if (imgMatch) imageUrl = imgMatch[1]
             }
 
             // Determine category
