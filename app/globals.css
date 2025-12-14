@@ -2,22 +2,83 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Smooth theme transition animation */
-@supports (view-transition-name: none) {
+/* ============================================
+   SLEEK THEME TRANSITION ANIMATIONS
+   ============================================ */
 
+/* View Transition API - Modern browsers (Chrome 111+, Edge 111+) */
+@supports (view-transition-name: none) {
+  /* Root transition with smooth crossfade */
   ::view-transition-old(root),
   ::view-transition-new(root) {
-    animation-duration: 0.5s;
+    animation-duration: 0.4s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    animation-fill-mode: both;
+  }
+
+  /* Smooth fade out of old theme */
+  ::view-transition-old(root) {
+    animation-name: theme-fade-out;
+    z-index: 1;
+  }
+
+  /* Smooth fade in of new theme with subtle scale */
+  ::view-transition-new(root) {
+    animation-name: theme-fade-in;
+    z-index: 2;
+  }
+
+  /* Keyframes for smooth theme transition */
+  @keyframes theme-fade-out {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+  }
+
+  @keyframes theme-fade-in {
+    from {
+      opacity: 0;
+      transform: scale(1.02);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Add a subtle glow effect during transition */
+  ::view-transition-group(root) {
+    animation-duration: 0.4s;
   }
 }
 
-/* Fallback for browsers without view-transition */
-* {
-  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    fill 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    stroke 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+/* Fallback for browsers without View Transition API */
+@supports not (view-transition-name: none) {
+  /* Smooth transitions for all color properties */
+  *,
+  *::before,
+  *::after {
+    transition-property: background-color, border-color, color, fill, stroke,
+      box-shadow, opacity, transform;
+    transition-duration: 0.4s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Exclude elements that shouldn't transition */
+  *:not(html):not(body):not([class*="animate"]):not([class*="transition-none"]) {
+    transition-delay: 0s;
+  }
+
+  /* Smooth body background transition */
+  body {
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+      color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
 
 @layer base {
