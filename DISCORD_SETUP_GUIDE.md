@@ -78,7 +78,9 @@ This guide will help you:
 ### 3.3 Configure Bot Settings
 1. **Username:** Your bot's name (e.g., "Trove Bot")
 2. **Icon:** Upload a bot icon (optional)
-3. **Public Bot:** Toggle OFF (keep it private)
+3. **Public Bot:** Toggle ON (must be public for OAuth to work!)
+   - ⚠️ **Important:** For OAuth login to work, the bot MUST be public
+   - Don't worry - it's still secure because only you can invite it
 4. **Requires OAuth2 Code Grant:** Toggle OFF
 
 ### 3.4 Enable Privileged Gateway Intents
@@ -115,6 +117,12 @@ Click **"Save Changes"**
 3. Click **"Authorize"**
 4. Complete any CAPTCHA if prompted
 5. Bot should now be in your server!
+
+**⚠️ Important:** If you see "Private application cannot have a default authorization link":
+- Go back to Bot settings
+- Toggle **"Public Bot"** to **ON** (enabled)
+- Save changes
+- Then try the invite URL again
 
 ---
 

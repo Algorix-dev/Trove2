@@ -97,20 +97,28 @@ For a small site, you can manually add news:
 ### Problem
 Stripe doesn't support your country for registration.
 
-### ✅ Solution 1: Use PayPal (Works in More Countries)
+### ✅ Solution 1: Use PayPal Personal Account (Works Too!)
 
 **Advantages:**
 - Available in 200+ countries
 - Easy integration
-- No country restrictions
+- Personal account works for receiving payments
 - Free to set up
 
 **Steps:**
 
-1. **Create PayPal Business Account:**
-   - Go to https://www.paypal.com/business
-   - Sign up (works in most countries)
-   - Get your API credentials
+1. **Create PayPal Account:**
+   - Go to https://www.paypal.com
+   - Click **"Sign Up"** (top right)
+   - Choose **"Personal Account"** (this works too!)
+   - Complete signup and verify email
+
+2. **Get API Credentials:**
+   - Go to https://developer.paypal.com
+   - Click **"Log in"** (use your PayPal account)
+   - Click **"Create App"** or go to **"My Apps & Credentials"**
+   - Create a new app
+   - You'll get Client ID and Client Secret
 
 2. **Install PayPal SDK:**
    ```bash
