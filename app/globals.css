@@ -100,14 +100,6 @@
 }
 
 @layer base {
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-
-
-
-@layer base {
   * {
     @apply border-border;
   }

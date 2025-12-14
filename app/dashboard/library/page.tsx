@@ -10,7 +10,19 @@ import { useRouter } from "next/navigation"
 export default function LibraryPage() {
     const { user, loading: authLoading } = useAuth()
     const router = useRouter()
-    const [books, setBooks] = useState<any[]>([])
+    const [books, setBooks] = useState<Array<{
+        id: string
+        user_id: string
+        title: string
+        author: string
+        cover_url: string | null
+        file_url: string
+        format: 'pdf' | 'epub' | 'txt'
+        total_pages: number
+        created_at: string
+        updated_at: string
+        progress: number
+    }>>([])
     const [loading, setLoading] = useState(true)
 
     const supabase = createBrowserClient(
@@ -27,36 +39,47 @@ export default function LibraryPage() {
         }
 
         const fetchBooks = async () => {
-            // Fetch books with reading progress
-            const { data: booksData } = await supabase
-                .from('books')
-                .select(`
-                    id,
-                    user_id,
-                    title,
-                    author,
-                    cover_url,
-                    file_url,
-                    format,
-                    total_pages,
-                    created_at,
-                    updated_at,
-                    reading_progress (
-                        progress_percentage
-                    )
-                `)
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false })
+            try {
+                // Fetch books with reading progress
+                const { data: booksData, error } = await supabase
+                    .from('books')
+                    .select(`
+                        id,
+                        user_id,
+                        title,
+                        author,
+                        cover_url,
+                        file_url,
+                        format,
+                        total_pages,
+                        created_at,
+                        updated_at,
+                        reading_progress (
+                            progress_percentage
+                        )
+                    `)
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false })
 
-            // Transform data to include progress percentage
-            const transformedBooks = booksData?.map(book => ({
-                ...book,
-                reading_progress: undefined,
-                progress: book.reading_progress?.[0]?.progress_percentage || 0
-            })) || []
+                if (error) {
+                    console.error('Error fetching books:', error)
+                    setLoading(false)
+                    return
+                }
 
-            setBooks(transformedBooks)
-            setLoading(false)
+                // Transform data to include progress percentage
+                const transformedBooks = booksData?.map(book => ({
+                    ...book,
+                    reading_progress: undefined,
+                    progress: book.reading_progress?.[0]?.progress_percentage || 0
+                })) || []
+
+                setBooks(transformedBooks)
+            } catch (error) {
+                console.error('Unexpected error fetching books:', error)
+            } finally {
+                setLoading(false)
+            }
         }
 
         fetchBooks()

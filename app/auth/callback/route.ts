@@ -1,15 +1,36 @@
-import { createBrowserClient } from '@supabase/ssr'
-import { NextResponse } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
+import { cookies } from 'next/headers'
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     const requestUrl = new URL(request.url)
     const code = requestUrl.searchParams.get('code')
     const origin = requestUrl.origin
 
     if (code) {
-        const supabase = createBrowserClient(
+        const cookieStore = await cookies()
+        
+        const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            {
+                cookies: {
+                    getAll() {
+                        return cookieStore.getAll()
+                    },
+                    setAll(cookiesToSet) {
+                        try {
+                            cookiesToSet.forEach(({ name, value, options }) => {
+                                cookieStore.set(name, value, options)
+                            })
+                        } catch (error) {
+                            // The `setAll` method was called from a Server Component.
+                            // This can be ignored if you have middleware refreshing
+                            // user sessions.
+                        }
+                    },
+                },
+            }
         )
 
         try {
@@ -20,8 +41,7 @@ export async function GET(request: Request) {
                 return NextResponse.redirect(`${origin}/login?error=auth_failed`)
             }
 
-            // Session is now stored client-side automatically
-            console.log('Session established successfully')
+            // Session is now stored in cookies
             return NextResponse.redirect(`${origin}/dashboard`)
         } catch (error) {
             console.error('Auth callback exception:', error)

@@ -33,21 +33,32 @@ export function SettingsForm() {
             setEmail(user.email || "")
             // Fetch profile data
             const fetchProfile = async () => {
-                const { data } = await supabase
-                    .from('profiles')
-                    .select('full_name, username, daily_goal_minutes')
-                    .eq('id', user.id)
-                    .single()
+                try {
+                    const { data, error } = await supabase
+                        .from('profiles')
+                        .select('full_name, username, daily_goal_minutes')
+                        .eq('id', user.id)
+                        .single()
 
-                if (data) {
-                    setFullName(data.full_name || user.user_metadata?.full_name || "")
-                    setUsername(data.username || "")
-                    setDailyGoal(data.daily_goal_minutes || 30)
+                    if (error) {
+                        console.error('Error fetching profile:', error)
+                        toast.error('Failed to load profile data')
+                        return
+                    }
+
+                    if (data) {
+                        setFullName(data.full_name || user.user_metadata?.full_name || "")
+                        setUsername(data.username || "")
+                        setDailyGoal(data.daily_goal_minutes || 30)
+                    }
+                } catch (error) {
+                    console.error('Unexpected error fetching profile:', error)
+                    toast.error('An unexpected error occurred')
                 }
             }
             fetchProfile()
         }
-    }, [user])
+    }, [user, supabase])
 
     const handleSaveProfile = async () => {
         if (!user) return
@@ -162,6 +173,10 @@ export function SettingsForm() {
                                 value={dailyGoal}
                                 onChange={(e) => setDailyGoal(parseInt(e.target.value))}
                                 className="flex-1 h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
+                                aria-label="Daily reading goal in minutes"
+                                aria-valuemin={15}
+                                aria-valuemax={120}
+                                aria-valuenow={dailyGoal}
                             />
                             <span className="text-xs text-muted-foreground">120m</span>
                         </div>

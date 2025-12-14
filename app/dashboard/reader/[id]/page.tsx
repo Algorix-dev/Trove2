@@ -1,9 +1,23 @@
 import { ReaderLayout } from "@/components/features/reader/reader-layout"
-import { PDFViewer } from "@/components/features/reader/pdf-viewer"
-import { EpubViewer } from "@/components/features/reader/epub-viewer"
-import { TxtViewer } from "@/components/features/reader/txt-viewer"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import dynamic from "next/dynamic"
+
+// Lazy load viewer components for better performance
+const PDFViewer = dynamic(() => import("@/components/features/reader/pdf-viewer").then(mod => ({ default: mod.PDFViewer })), {
+    loading: () => <div className="flex items-center justify-center h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>,
+    ssr: false
+})
+
+const EpubViewer = dynamic(() => import("@/components/features/reader/epub-viewer").then(mod => ({ default: mod.EpubViewer })), {
+    loading: () => <div className="flex items-center justify-center h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>,
+    ssr: false
+})
+
+const TxtViewer = dynamic(() => import("@/components/features/reader/txt-viewer").then(mod => ({ default: mod.TxtViewer })), {
+    loading: () => <div className="flex items-center justify-center h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>,
+    ssr: false
+})
 
 export default async function ReaderPage({
     params,
@@ -28,20 +42,31 @@ export default async function ReaderPage({
         .single()
 
     if (!book) {
-        return <div className="flex items-center justify-center min-h-screen">
-            <div className="text-center">
-                <h1 className="text-2xl font-bold mb-2">Book not found</h1>
-                <p className="text-muted-foreground">The book you're looking for doesn't exist or you don't have access to it.</p>
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-center space-y-4">
+                    <h1 className="text-2xl font-bold">Book not found</h1>
+                    <p className="text-muted-foreground">The book you're looking for doesn't exist or you don't have access to it.</p>
+                    <a 
+                        href="/dashboard/library" 
+                        className="text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+                    >
+                        Return to Library
+                    </a>
+                </div>
             </div>
-        </div>
+        )
     }
 
-    // Get signed URL for the file
-    const { data } = await supabase.storage
-        .from('books')
-        .createSignedUrl(book.file_url, 3600) // 1 hour expiry
-
-    const fileUrl = data?.signedUrl || ""
+    // Get signed URL for the file if it's a storage path, otherwise use the URL directly
+    let fileUrl = book.file_url
+    if (book.file_url && !book.file_url.startsWith('http')) {
+        // It's a storage path, create a signed URL
+        const { data } = await supabase.storage
+            .from('books')
+            .createSignedUrl(book.file_url, 3600) // 1 hour expiry
+        fileUrl = data?.signedUrl || book.file_url
+    }
     const format = book.format || 'pdf'
 
     // Extract bookmark navigation params

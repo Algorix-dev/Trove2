@@ -1,16 +1,35 @@
 import { DashboardStats } from "@/components/features/dashboard-stats"
-import { DashboardCharts } from "@/components/features/dashboard-charts"
 import { ContinueReading } from "@/components/features/continue-reading"
 import { QuickActions } from "@/components/features/quick-actions"
 import { ShareInviteModal } from "@/components/features/share-invite-modal"
 import { LevelProgress } from "@/components/features/gamification/level-progress"
-import { AchievementConfetti } from "@/components/features/gamification/achievement-confetti"
-import { DailyGoalCelebration } from "@/components/features/gamification/daily-goal-celebration"
-import { LevelUpCelebration } from "@/components/features/gamification/level-up-celebration"
-import { ReadingStreakCalendar } from "@/components/features/analytics/reading-streak-calendar"
 import { ReadingGoals } from "@/components/features/analytics/reading-goals"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import dynamic from "next/dynamic"
+
+// Lazy load heavy components for better performance
+const DashboardCharts = dynamic(() => import("@/components/features/dashboard-charts").then(mod => ({ default: mod.DashboardCharts })), {
+    loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
+    ssr: false
+})
+
+const AchievementConfetti = dynamic(() => import("@/components/features/gamification/achievement-confetti").then(mod => ({ default: mod.AchievementConfetti })), {
+    ssr: false
+})
+
+const DailyGoalCelebration = dynamic(() => import("@/components/features/gamification/daily-goal-celebration").then(mod => ({ default: mod.DailyGoalCelebration })), {
+    ssr: false
+})
+
+const LevelUpCelebration = dynamic(() => import("@/components/features/gamification/level-up-celebration").then(mod => ({ default: mod.LevelUpCelebration })), {
+    ssr: false
+})
+
+const ReadingStreakCalendar = dynamic(() => import("@/components/features/analytics/reading-streak-calendar").then(mod => ({ default: mod.ReadingStreakCalendar })), {
+    loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
+    ssr: false
+})
 
 export default async function DashboardPage() {
     const supabase = await createClient()

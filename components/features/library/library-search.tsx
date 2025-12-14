@@ -91,6 +91,7 @@ export function LibrarySearch({ books, onFilteredChange }: LibrarySearchProps) {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-9"
+                        aria-label="Search books by title or author"
                     />
                     {searchQuery && (
                         <Button
@@ -98,8 +99,9 @@ export function LibrarySearch({ books, onFilteredChange }: LibrarySearchProps) {
                             size="icon"
                             className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
                             onClick={() => setSearchQuery("")}
+                            aria-label="Clear search"
                         >
-                            <X className="h-4 w-4" />
+                            <X className="h-4 w-4" aria-hidden="true" />
                         </Button>
                     )}
                 </div>
@@ -107,8 +109,10 @@ export function LibrarySearch({ books, onFilteredChange }: LibrarySearchProps) {
                     variant={showFilters ? "default" : "outline"}
                     size="icon"
                     onClick={() => setShowFilters(!showFilters)}
+                    aria-label={showFilters ? "Hide filters" : "Show filters"}
+                    aria-expanded={showFilters}
                 >
-                    <SlidersHorizontal className="h-4 w-4" />
+                    <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
                 </Button>
             </div>
 
@@ -116,9 +120,9 @@ export function LibrarySearch({ books, onFilteredChange }: LibrarySearchProps) {
             {showFilters && (
                 <div className="flex flex-wrap gap-3 p-4 bg-muted/50 rounded-lg border">
                     <div className="flex-1 min-w-[200px]">
-                        <label className="text-sm font-medium mb-2 block">Format</label>
+                        <label htmlFor="format-filter" className="text-sm font-medium mb-2 block">Format</label>
                         <Select value={formatFilter} onValueChange={(value: FormatFilter) => setFormatFilter(value)}>
-                            <SelectTrigger>
+                            <SelectTrigger id="format-filter" aria-label="Filter by book format">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -131,9 +135,9 @@ export function LibrarySearch({ books, onFilteredChange }: LibrarySearchProps) {
                     </div>
 
                     <div className="flex-1 min-w-[200px]">
-                        <label className="text-sm font-medium mb-2 block">Sort By</label>
+                        <label htmlFor="sort-filter" className="text-sm font-medium mb-2 block">Sort By</label>
                         <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-                            <SelectTrigger>
+                            <SelectTrigger id="sort-filter" aria-label="Sort books">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

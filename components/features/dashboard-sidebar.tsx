@@ -54,21 +54,26 @@ export function DashboardSidebar() {
                     <h1 className="text-2xl font-bold">Trove</h1>
                 </Link>
                 <div className="space-y-1">
-                    {routes.map((route) => (
-                        <Link
-                            key={route.href}
-                            href={route.href}
-                            className={cn(
-                                "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-primary hover:bg-primary/10 rounded-lg transition-all duration-200",
-                                pathname === route.href ? "text-primary bg-primary/10" : "text-muted-foreground"
-                            )}
-                        >
-                            <div className="flex items-center flex-1">
-                                <route.icon className={cn("h-5 w-5 mr-3", pathname === route.href ? "text-primary" : "text-muted-foreground")} />
-                                {route.label}
-                            </div>
-                        </Link>
-                    ))}
+                    {routes.map((route) => {
+                        const Icon = route.icon
+                        const isActive = pathname === route.href
+                        return (
+                            <Link
+                                key={route.href}
+                                href={route.href}
+                                aria-current={isActive ? "page" : undefined}
+                                className={cn(
+                                    "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-primary hover:bg-primary/10 rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                                    isActive ? "text-primary bg-primary/10" : "text-muted-foreground"
+                                )}
+                            >
+                                <div className="flex items-center flex-1">
+                                    <Icon className={cn("h-5 w-5 mr-3", isActive ? "text-primary" : "text-muted-foreground")} aria-hidden="true" />
+                                    {route.label}
+                                </div>
+                            </Link>
+                        )
+                    })}
                 </div>
             </div>
         </div>
