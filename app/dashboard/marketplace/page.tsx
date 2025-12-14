@@ -167,7 +167,9 @@ export default function MarketplacePage() {
                   </div>
                   <CardContent className="p-4 flex-1 flex flex-col">
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-lg line-clamp-2">{listing.title}</h3>
+                      <Link href={`/dashboard/marketplace/${listing.id}`}>
+                        <h3 className="font-semibold text-lg line-clamp-2 hover:text-primary transition-colors">{listing.title}</h3>
+                      </Link>
                       <Badge variant="outline" className="ml-2 capitalize">{listing.condition}</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
@@ -188,7 +190,6 @@ export default function MarketplacePage() {
                       </div>
                     </div>
                   </CardContent>
-                </Link>
               </Card>
             </motion.div>
           ))}
