@@ -103,8 +103,19 @@ export function DashboardCharts() {
                             axisLine={false}
                             tickFormatter={(value) => `${value}m`}
                         />
-                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                        <Bar dataKey="minutes" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+                        <Tooltip 
+                            content={<CustomTooltip />} 
+                            cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }} 
+                            animationDuration={200}
+                        />
+                        <Bar 
+                            dataKey="minutes" 
+                            fill="hsl(var(--primary))" 
+                            radius={[8, 8, 0, 0]}
+                            className="transition-all duration-300 hover:opacity-80"
+                            animationDuration={800}
+                            animationEasing="ease-out"
+                        />
                     </BarChart>
                 </ResponsiveContainer>
             </CardContent>

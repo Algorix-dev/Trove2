@@ -4,6 +4,7 @@ import { QuickActions } from "@/components/features/quick-actions"
 import { ShareInviteModal } from "@/components/features/share-invite-modal"
 import { LevelProgress } from "@/components/features/gamification/level-progress"
 import { ReadingGoals } from "@/components/features/analytics/reading-goals"
+import { DashboardQuote } from "@/components/features/dashboard-quote"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import dynamic from "next/dynamic"
@@ -75,9 +76,7 @@ export default async function DashboardPage() {
                     <p className="text-muted-foreground">Ready to continue your reading journey?</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="text-sm text-muted-foreground italic bg-muted/50 px-4 py-2 rounded-full hidden md:block">
-                        "A reader lives a thousand lives before he dies." — George R.R. Martin
-                    </div>
+                    <DashboardQuote />
                     <ShareInviteModal />
                 </div>
             </div>

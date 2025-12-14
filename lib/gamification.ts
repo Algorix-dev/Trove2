@@ -4,8 +4,8 @@ import { toast } from "sonner"
 export const GamificationService = {
     async awardXP(userId: string, amount: number, action: string, bookId?: string) {
         const supabase = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            process.env['NEXT_PUBLIC_SUPABASE_URL']!,
+            process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!
         )
 
         try {
@@ -68,8 +68,8 @@ export const GamificationService = {
 
     async checkAndUnlockAchievement(userId: string, achievementCode: string) {
         const supabase = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            process.env['NEXT_PUBLIC_SUPABASE_URL']!,
+            process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!
         )
 
         try {

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { LibraryContent } from "@/components/features/library/library-content"
 import { UploadModal } from "@/components/features/library/upload-modal"
+import { WelcomeAnimation } from "@/components/features/welcome-animation"
 import { createBrowserClient } from "@supabase/ssr"
 import { useAuth } from "@/components/providers/auth-provider"
 import { useRouter } from "next/navigation"
@@ -24,11 +25,7 @@ export default function LibraryPage() {
         progress: number
     }>>([])
     const [loading, setLoading] = useState(true)
-
-            const supabase = createBrowserClient(
-                process.env['NEXT_PUBLIC_SUPABASE_URL']!,
-                process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!
-            )
+    const [showWelcome, setShowWelcome] = useState(false)
 
     useEffect(() => {
         if (authLoading) return
@@ -39,6 +36,11 @@ export default function LibraryPage() {
         }
 
         const fetchBooks = async () => {
+            const supabase = createBrowserClient(
+                process.env['NEXT_PUBLIC_SUPABASE_URL']!,
+                process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!
+            )
+
             try {
                 // Fetch books with reading progress
                 const { data: booksData, error } = await supabase
@@ -75,6 +77,13 @@ export default function LibraryPage() {
                 })) || []
 
                 setBooks(transformedBooks)
+                
+                // Show welcome animation on first visit
+                const hasSeenWelcome = sessionStorage.getItem('library-welcome-seen')
+                if (!hasSeenWelcome && transformedBooks.length === 0) {
+                    setShowWelcome(true)
+                    sessionStorage.setItem('library-welcome-seen', 'true')
+                }
             } catch (error) {
                 console.error('Unexpected error fetching books:', error)
             } finally {
@@ -83,7 +92,7 @@ export default function LibraryPage() {
         }
 
         fetchBooks()
-    }, [user, authLoading, router, supabase])
+    }, [user, authLoading, router])
 
     if (authLoading || loading) {
         return (
@@ -94,13 +103,22 @@ export default function LibraryPage() {
     }
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex items-center justify-between">
-                <h2 className="text-3xl font-bold tracking-tight">Library</h2>
-                <UploadModal />
-            </div>
+        <>
+            {showWelcome && (
+                <WelcomeAnimation 
+                    message="Welcome to Your Treasures" 
+                    onComplete={() => setShowWelcome(false)}
+                    duration={3000}
+                />
+            )}
+            <div className="space-y-6 animate-in fade-in duration-500">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-3xl font-bold tracking-tight">Library</h2>
+                    <UploadModal />
+                </div>
 
-            <LibraryContent books={books} />
-        </div>
+                <LibraryContent books={books} />
+            </div>
+        </>
     )
 }
