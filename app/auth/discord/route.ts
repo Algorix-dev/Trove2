@@ -63,29 +63,23 @@ export async function GET(request: Request) {
       .single()
 
     if (existingProfile) {
-      // User exists - get auth user and create session
-      const { data: { users } } = await supabase.auth.admin.listUsers()
-      const authUser = users.find(u => u.email === discordUser.email)
+      // User exists - send magic link to sign in
+      await supabase.auth.signInWithOtp({
+        email: discordUser.email,
+        options: {
+          emailRedirectTo: `${origin}/dashboard`
+        }
+      })
       
-      if (authUser) {
-        // Create a magic link for the user to sign in
-        const { data, error } = await supabase.auth.signInWithOtp({
-          email: discordUser.email,
-          options: {
-            emailRedirectTo: `${origin}/dashboard`
-          }
-        })
-        
-        // For now, redirect to login with a message
-        return NextResponse.redirect(`${origin}/login?message=Please check your email to complete Discord sign in`)
-      }
+      // Redirect to login with a message
+      return NextResponse.redirect(`${origin}/login?message=Please check your email to complete Discord sign in`)
     }
 
     // New user - create account
     // Generate a random password since Discord handles authentication
     const randomPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12) + 'A1!'
     
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    const { error: signUpError } = await supabase.auth.signUp({
       email: discordUser.email,
       password: randomPassword,
       options: {
