@@ -34,11 +34,24 @@ export async function GET(request: NextRequest) {
         )
 
         try {
-            const { error } = await supabase.auth.exchangeCodeForSession(code)
+            const { data: { user }, error } = await supabase.auth.exchangeCodeForSession(code)
 
             if (error) {
                 console.error('Auth callback error:', error)
                 return NextResponse.redirect(`${origin}/login?error=auth_failed`)
+            }
+
+            // Check onboarding status
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('onboarding_completed')
+                    .eq('id', user.id)
+                    .single()
+
+                if (!profile?.onboarding_completed) {
+                    return NextResponse.redirect(`${origin}/onboarding`)
+                }
             }
 
             // Session is now stored in cookies

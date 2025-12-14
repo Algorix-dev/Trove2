@@ -6,11 +6,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Loader2, Bell, Mail } from "lucide-react"
+import { Loader2, Bell, Mail, Upload, X } from "lucide-react"
 import { createBrowserClient } from "@supabase/ssr"
 import { useAuth } from "@/components/providers/auth-provider"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useRef } from "react"
 
 export function SettingsForm() {
     const [fullName, setFullName] = useState("")
@@ -20,6 +22,9 @@ export function SettingsForm() {
     const [loading, setLoading] = useState(false)
     const [emailNotifications, setEmailNotifications] = useState(true)
     const [inAppNotifications, setInAppNotifications] = useState(true)
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+    const [uploading, setUploading] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement>(null)
     const { user } = useAuth()
     const router = useRouter()
 
@@ -50,6 +55,7 @@ export function SettingsForm() {
                         setFullName(data.full_name || user.user_metadata?.full_name || "")
                         setUsername(data.username || "")
                         setDailyGoal(data.daily_goal_minutes || 30)
+                        setAvatarUrl(data.avatar_url || user.user_metadata?.avatar_url || null)
                     }
                 } catch (error) {
                     console.error('Unexpected error fetching profile:', error)
@@ -59,6 +65,94 @@ export function SettingsForm() {
             fetchProfile()
         }
     }, [user, supabase])
+
+    const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (!user || !event.target.files || event.target.files.length === 0) return
+
+        const file = event.target.files[0]
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${user.id}-${Math.random()}.${fileExt}`
+        const filePath = `avatars/${fileName}`
+
+        // Validate file
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("File size must be less than 5MB")
+            return
+        }
+
+        if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+            toast.error("Please upload an image file (JPEG, PNG, WebP, or GIF)")
+            return
+        }
+
+        setUploading(true)
+        try {
+            // Delete old avatar if exists
+            if (avatarUrl) {
+                const oldPath = avatarUrl.split('/').pop()
+                if (oldPath) {
+                    await supabase.storage.from('avatars').remove([oldPath])
+                }
+            }
+
+            // Upload new avatar
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file, { upsert: true })
+
+            if (uploadError) throw uploadError
+
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath)
+
+            // Update profile
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ avatar_url: publicUrl })
+                .eq('id', user.id)
+
+            if (updateError) throw updateError
+
+            setAvatarUrl(publicUrl)
+            toast.success("Profile picture updated!")
+            router.refresh()
+        } catch (error: any) {
+            console.error(error)
+            toast.error(error.message || "Failed to upload avatar")
+        } finally {
+            setUploading(false)
+        }
+    }
+
+    const handleRemoveAvatar = async () => {
+        if (!user || !avatarUrl) return
+
+        setUploading(true)
+        try {
+            const oldPath = avatarUrl.split('/').pop()
+            if (oldPath) {
+                await supabase.storage.from('avatars').remove([oldPath])
+            }
+
+            const { error } = await supabase
+                .from('profiles')
+                .update({ avatar_url: null })
+                .eq('id', user.id)
+
+            if (error) throw error
+
+            setAvatarUrl(null)
+            toast.success("Profile picture removed")
+            router.refresh()
+        } catch (error: any) {
+            console.error(error)
+            toast.error(error.message || "Failed to remove avatar")
+        } finally {
+            setUploading(false)
+        }
+    }
 
     const handleSaveProfile = async () => {
         if (!user) return
@@ -103,6 +197,51 @@ export function SettingsForm() {
                     <CardDescription>Update your personal details.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                    <div className="space-y-4">
+                        <Label>Profile Picture</Label>
+                        <div className="flex items-center gap-4">
+                            <Avatar className="h-20 w-20">
+                                <AvatarImage src={avatarUrl || undefined} alt={fullName || "User"} />
+                                <AvatarFallback className="text-lg">
+                                    {fullName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="flex gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={uploading}
+                                >
+                                    <Upload className="w-4 h-4 mr-2" />
+                                    {uploading ? "Uploading..." : "Upload"}
+                                </Button>
+                                {avatarUrl && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleRemoveAvatar}
+                                        disabled={uploading}
+                                    >
+                                        <X className="w-4 h-4 mr-2" />
+                                        Remove
+                                    </Button>
+                                )}
+                            </div>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleAvatarUpload}
+                                className="hidden"
+                            />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Upload a profile picture (max 5MB). JPG, PNG, WebP, or GIF.
+                        </p>
+                    </div>
                     <div className="space-y-2">
                         <Label htmlFor="username">Username</Label>
                         <Input

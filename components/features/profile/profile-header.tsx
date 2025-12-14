@@ -12,6 +12,8 @@ interface ProfileHeaderProps {
         email?: string
         avatar_url?: string
         created_at?: string
+        rank?: number
+        rank_title?: string
     }
     stats: {
         booksRead: number
@@ -45,10 +47,12 @@ export function ProfileHeader({ user, stats }: ProfileHeaderProps) {
                             <CalendarDays className="h-4 w-4" />
                             Joined {joinDate}
                         </div>
-                        <div className="flex items-center gap-1">
-                            <Award className="h-4 w-4" />
-                            Level 1 Scholar
-                        </div>
+                        {user.rank_title && (
+                            <div className="flex items-center gap-1">
+                                <Award className="h-4 w-4" />
+                                {user.rank_title} {user.rank !== undefined && `(Rank ${user.rank})`}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

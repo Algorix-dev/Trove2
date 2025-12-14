@@ -42,9 +42,19 @@ export default async function DashboardPage() {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, username, total_xp, current_level')
+        .select('full_name, username, nickname, onboarding_completed, tutorial_completed, total_xp, current_level')
         .eq('id', user.id)
         .single()
+
+    // Redirect to onboarding if not completed
+    if (!profile?.onboarding_completed) {
+        redirect("/onboarding")
+    }
+
+    // Redirect to tutorial if onboarding done but tutorial not completed
+    if (profile?.onboarding_completed && !profile?.tutorial_completed) {
+        redirect("/dashboard/tutorial")
+    }
 
     // Fetch levels for progress calculation
     const { data: levels } = await supabase
@@ -61,8 +71,8 @@ export default async function DashboardPage() {
     const nextLevelXP = nextLevelInfo?.min_xp || (levelInfo?.min_xp || 0) + 1000 // Fallback if max level
     const levelTitle = levelInfo?.title || "Reader"
 
-    // Use username if available, otherwise full name, otherwise "Reader"
-    const name = profile?.username || profile?.full_name?.split(' ')[0] || user.user_metadata?.full_name?.split(' ')[0] || "Reader"
+    // Use nickname if available, then username, then full name, otherwise "Reader"
+    const name = profile?.nickname || profile?.username || profile?.full_name?.split(' ')[0] || user.user_metadata?.full_name?.split(' ')[0] || "Reader"
     const hour = new Date().getHours()
     let greeting = "Good Morning"
     if (hour >= 12 && hour < 17) greeting = "Good Afternoon"

@@ -45,7 +45,9 @@ export default async function ProfilePage() {
         full_name: profile?.full_name || user.user_metadata?.full_name,
         email: user.email,
         avatar_url: profile?.avatar_url || user.user_metadata?.avatar_url,
-        created_at: user.created_at
+        created_at: user.created_at,
+        rank: profile?.rank,
+        rank_title: profile?.rank_title
     }
 
     return (
