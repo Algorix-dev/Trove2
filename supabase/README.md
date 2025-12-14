@@ -28,7 +28,8 @@ After running the SQL script:
 1. **Create Storage Bucket:**
    - Go to Supabase Dashboard → Storage
    - Create a bucket named `books` (private)
-   - See `STORAGE_POLICIES_GUIDE.md` for policy setup
+   - **Important:** Storage policies must be created via Dashboard UI (not SQL)
+   - See `STORAGE_POLICIES_GUIDE.md` for detailed policy setup instructions
 
 2. **Configure Environment Variables:**
    - Create `.env.local` in your project root

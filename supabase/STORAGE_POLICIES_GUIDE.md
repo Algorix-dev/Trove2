@@ -1,22 +1,12 @@
 # Storage Bucket Policies Setup Guide
 
-## 🚀 Quick Setup (Recommended - SQL Method)
+## ⚠️ IMPORTANT: Storage policies must be created via Dashboard UI
 
-**Easiest way:** Run the SQL script!
-
-1. **Go to Supabase Dashboard → SQL Editor**
-2. **Open `setup_storage.sql`** in this directory
-3. **Copy the entire contents**
-4. **Paste into SQL Editor**
-5. **Click "Run"**
-
-That's it! This creates the bucket and all policies automatically.
+Storage buckets and policies cannot be created via SQL in Supabase. You must use the Dashboard UI.
 
 ---
 
-## 📋 Manual Setup (Alternative - UI Method)
-
-If the SQL method doesn't work, use the Dashboard UI:
+## 📋 Step-by-Step Setup (UI Method)
 
 ## Steps to Fix Storage Upload Issues:
 
